@@ -1,12 +1,12 @@
 <template>
-  <section class="container">
+  <div class="container">
     <div>
       <logo />
       <h1 class="title">
         app
       </h1>
       <h2 class="subtitle">
-        My astounding Nuxt.js project
+        My splendid Nuxt.js project
       </h2>
       <div class="links">
         <a
@@ -21,7 +21,7 @@
         >GitHub</a>
       </div>
     </div>
-  </section>
+  </div>
 </template>
 
 <script>

@@ -2,23 +2,22 @@ version: '3'
 
 services:
   web:
-    build: .
+    build: ./web
     tty: true
-    ports:
-      - 3000:3000
+    privileged: true
     volumes:
       - ./html:/var/www/html:cached
     links:
       - db
-  #  network_mode: bridge
-  #  environment:
-  #    VIRTUAL_HOST: local-sirobako.jp
-  #    VIRTUAL_PORT: 3000
+    network_mode: bridge
+    environment:
+      VIRTUAL_HOST: local-dev.jp
   db:
     image: mysql:5.7
     network_mode: bridge
     environment:
-      MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+      MYSQL_ROOT_PASSWORD: sirolab
+      MYSQL_DATABASE: sirolab
     volumes:
       - mysql_data:/var/lib/mysql
 volumes:

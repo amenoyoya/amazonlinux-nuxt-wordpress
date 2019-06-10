@@ -1,0 +1,5 @@
+RewriteEngine On
+RewriteBase /
+
+# /app/XXX => /app/dist/XXX
+RewriteRule ^(?!dist/)(.*)$ /app/dist/$1
