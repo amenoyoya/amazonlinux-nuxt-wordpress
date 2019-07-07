@@ -1,0 +1,10 @@
+version: '2'
+services:
+  python:
+    build: ./python
+    container_name: python-flask
+    ports:
+      - '5000:5000'
+    volumes:
+      - ./app:/web/app
+    command: python index.py

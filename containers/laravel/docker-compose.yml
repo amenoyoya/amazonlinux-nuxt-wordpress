@@ -1,0 +1,44 @@
+version: "3"
+
+services:
+  web:
+    build: ./web
+    links:
+      - mysql # mysqlコンテナとリンク
+    volumes:
+      # 共有ディレクトリ
+      - ./laravel:/var/www/laravel # ドキュメントルート
+      # apache2設定ファイルを共有
+      - ./web/apache2/sites-available:/etc/apache2/sites-available
+      - ./web/apache2/ports.conf:/etc/apache2/ports.conf
+      # php設定ファイルを共有
+      - ./web/php.ini /usr/local/etc/php/php.ini
+    stdin_open: true
+    tty: true
+    network_mode: bridge
+    environment:
+      # vhosts環境設定
+      VIRTUAL_HOST: local-host.dev
+      CERT_NAME: local # nginx-proxyの鍵設定ファイルとしてlocal.key, local.crtを追加しておく
+      HTTPS_METHOD: noredirect
+      # mysqlコンテナのDBに接続するための環境設定
+      DB_HOST: mysql
+      DB_DATABASE: laravel
+      DB_USERNAME: root
+      DB_PASSWORD: laravel
+  mysql:
+    image: mysql:5.7
+    volumes:
+      # DB永続化
+      - db-data:/var/lib/mysql
+      # 起動時にinitdb.d内で定義されたデータベースを構築する
+      - ./db/initdb.d:/docker-entrypoint-initdb.d
+    working_dir: /var/lib/mysql
+    network_mode: bridge
+    environment:
+      MYSQL_ROOT_PASSWORD: laravel
+      MYSQL_DATABASE: laravel
+      VIRTUAL_PORT: 3306
+volumes:
+  db-data:
+    driver: local

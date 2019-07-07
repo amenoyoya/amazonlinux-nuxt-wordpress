@@ -1,0 +1,51 @@
+version: "3"
+
+services:
+  web:
+    build: ./web
+    volumes:
+      # document root: ./laravel => container.web//var/www/laravel
+      - ./laravel:/var/www/laravel
+      # settings sharing
+      - ./web/logs:/etc/nginx/logs
+      - ./web/conf.d:/etc/nginx/conf.d
+    ports:
+      # localhost:8081 => container.web:80
+      - 8081:80
+    links:
+      - phpfpm
+  phpfpm:
+    build: ./phpfpm
+    volumes:
+      # document root: ./laravel => container.phpfpm//var/www/laravel
+      - ./laravel:/var/www/laravel
+      # settings sharing
+      - ./phpfpm/php.ini:/usr/local/etc/php/php.ini
+    links:
+      - db
+    environment:
+      # rootユーザーでのcomposer実行を許可
+      COMPOSER_ALLOW_SUPERUSER: 1
+      # mysqlコンテナのDBに接続するための環境設定
+      DB_HOST: mysql
+      DB_DATABASE: laravel
+      DB_USERNAME: root
+      DB_PASSWORD: laravel
+  db:
+    image: mysql:5.7
+    volumes:
+      # DB永続化
+      - db-data:/var/lib/mysql
+      # 起動時にinitdb.d内で定義されたデータベースを構築する
+      - ./db/initdb.d:/docker-entrypoint-initdb.d
+      # 設定ファイル共有
+      - ./db/conf.d:/etc/mysql/conf.d
+    working_dir: /var/lib/mysql
+    network_mode: bridge
+    environment:
+      MYSQL_ROOT_PASSWORD: laravel
+      MYSQL_DATABASE: laravel
+      VIRTUAL_PORT: 3306
+volumes:
+  db-data:
+    driver: local

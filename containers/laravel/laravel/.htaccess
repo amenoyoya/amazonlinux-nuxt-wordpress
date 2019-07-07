@@ -1,0 +1,5 @@
+RewriteEngine On
+RewriteBase /
+
+# /* => /public/*
+RewriteRule ^(?!public/)(.*)$ /public/$1
