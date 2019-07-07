@@ -1,0 +1,17 @@
+version: '2' # composeファイルバージョン
+services:
+  # 必要なのはPHP(+Apache)サービス用のコンテナのみ
+  php:
+    build: ./php # php/Dockerfileからビルド
+    container_name: php-apache # コンテナ名を"php-apache"に
+    ports:
+      # CoreOSとPHPコンテナのポートをつなぐための設定
+      - 80:80 # デフォルトサイト: 80番ポートをつなぐ
+      - 8000-8001:8000-8001 # VirtualHostサイト: 8000-8001番ポートをつなぐ
+    volumes:
+      # ホスト(CoreOS)の ./html とゲスト(PHPコンテナ)の /var/www/html をつなぐ
+      # Vagrantの設定により、Windows://.\share\ = CoreOS://~/share/
+      # => Windows側からPHPコンテナのドキュメントルートにアクセス可
+      - ./html:/var/www/html
+    environment:
+      VIRTUAL_HOST: example.com
