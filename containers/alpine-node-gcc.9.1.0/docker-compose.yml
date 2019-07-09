@@ -1,0 +1,10 @@
+version: "3"
+
+services:
+  app:
+    image: alpine-node-gcc:9.1.0
+    working_dir: /app
+    volumes:
+      - ./app:/app
+    stdin_open: true
+    tty: true
