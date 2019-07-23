@@ -5,6 +5,7 @@ services:
     build: ./web
     links:
       - db # dbコンテナとリンク
+      - mailhog # mailhogコンテナとリンク
     volumes:
       # 共有ディレクトリ
       - ./html:/var/www/html # ドキュメントルート
