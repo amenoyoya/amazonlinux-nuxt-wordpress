@@ -1,0 +1,62 @@
+version: "3"
+
+services:
+  web:
+    build: ./web
+    links:
+      - db # dbコンテナとリンク
+    volumes:
+      # 共有ディレクトリ
+      - ./html:/var/www/html # ドキュメントルート
+      # virtualhost設定ファイル
+      - ./web/localhost.dev.conf:/etc/httpd/conf.d/localhost.dev.conf
+      # php設定ファイルを共有
+      - ./web/php.ini:/etc/php.d/php.ini
+    ports:
+      - 1000:80
+    stdin_open: true
+    tty: true
+    network_mode: bridge
+    environment:
+      # dbコンテナのDBに接続するための環境設定
+      DB_HOST: mysql
+      DB_DATABASE: web
+      DB_USERNAME: root
+      DB_PASSWORD: root
+      # mailhogコンテナに接続するための環境設定
+      # MAIL_DRIVER: smtp
+      # MAIL_HOST: mailhog
+      # MAIL_PORT: 1025
+      # MAIL_ENCRYPTION: null
+  db:
+    image: mysql:5.7
+    volumes:
+      # DB永続化
+      - db-data:/var/lib/mysql
+      # 起動時にinitdb.d内で定義されたデータベースを構築する
+      - ./db/initdb.d:/docker-entrypoint-initdb.d
+      # 設定ファイル共有
+      - ./db/my.cnf:/etc/mysql/conf.d/my.cnf
+    working_dir: /var/lib/mysql
+    network_mode: bridge
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: web
+  pma:
+    image: phpmyadmin/phpmyadmin:latest
+    ports:
+      - 2000:80
+    network_mode: bridge
+    environment:
+      PMA_HOST: db
+    links:
+      - db
+  mailhog:
+    image: mailhog/mailhog
+    ports:
+      - 3000:8025 # HTTP Port
+      # - 4000:1025 # SMTP Port
+    network_mode: bridge
+volumes:
+  db-data:
+    driver: local
