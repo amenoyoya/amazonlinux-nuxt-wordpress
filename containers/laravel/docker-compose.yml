@@ -12,7 +12,7 @@ services:
       - ./web/apache2/sites-available:/etc/apache2/sites-available
       - ./web/apache2/ports.conf:/etc/apache2/ports.conf
       # php設定ファイルを共有
-      - ./web/php.ini /usr/local/etc/php/php.ini
+      - ./web/php.ini:/usr/local/etc/php/php.ini
     stdin_open: true
     tty: true
     network_mode: bridge
@@ -33,6 +33,8 @@ services:
       - db-data:/var/lib/mysql
       # 起動時にinitdb.d内で定義されたデータベースを構築する
       - ./db/initdb.d:/docker-entrypoint-initdb.d
+      # 設定ファイル共有
+      - ./db/my.cnf:/etc/mysql/conf.d/my.cnf
     working_dir: /var/lib/mysql
     network_mode: bridge
     environment:
