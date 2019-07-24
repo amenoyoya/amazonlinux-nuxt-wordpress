@@ -1,0 +1,10 @@
+version: "3"
+
+services:
+  web:
+    build: .
+    ports:
+      - "2222:22"
+    stdin_open: true
+    tty: true
+    command: /bin/sh -c "/etc/init.d/sshd start && tail -f /dev/null"
