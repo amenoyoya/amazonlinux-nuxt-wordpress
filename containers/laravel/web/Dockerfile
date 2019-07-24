@@ -12,13 +12,14 @@ RUN apt-get update && apt-get install -y unzip git && \
 
 # -- Composer settings --
 # composerインストール
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+# RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 # Composerをrootユーザーで実行可能にする
-ENV COMPOSER_ALLOW_SUPERUSER 1
+# ENV COMPOSER_ALLOW_SUPERUSER 1
 # Composerのグローバルパッケージのインストール先を変更
-ENV COMPOSER_HOME /composer
+# ENV COMPOSER_HOME /composer
 # ComposerのグローバルパッケージへのPATHを通す
-ENV PATH $PATH:/composer/vendor/bin
+# ENV PATH $PATH:/composer/vendor/bin
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 # -- apache settings --
 # mod_rewrite有効化
