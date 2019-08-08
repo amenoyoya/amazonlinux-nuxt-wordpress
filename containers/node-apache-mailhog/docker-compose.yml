@@ -25,7 +25,7 @@ services:
       DB_USERNAME: root
       DB_PASSWORD: root
       # VIRTUAL_HOST設定（nginx-proxy）
-      VIRTUAL_HOST: devel.localhost
+      VIRTUAL_HOST: devel.localhost # localhost:1000 の代わりに devel.localhost でアクセス可能に
       VIRTUAL_PORT: 80
       # mailhogコンテナに接続するための環境設定
       # MAIL_DRIVER: smtp
@@ -54,7 +54,7 @@ services:
     environment:
       PMA_HOST: db
       # VIRTUAL_HOST設定（nginx-proxy）
-      VIRTUAL_HOST: pma.devel.localhost
+      VIRTUAL_HOST: pma.devel.localhost # localhost:2000 の代わりに pma.devel.localhost でアクセス可能に
       VIRTUAL_PORT: 80
     links:
       - db
@@ -67,7 +67,7 @@ services:
     environment:
       PMA_HOST: db
       # VIRTUAL_HOST設定（nginx-proxy）
-      VIRTUAL_HOST: mail.devel.localhost
+      VIRTUAL_HOST: mail.devel.localhost # localhost:3000 の代わりに mail.devel.localhost でアクセス可能に
       VIRTUAL_PORT: 8025
 volumes:
   db-data:
