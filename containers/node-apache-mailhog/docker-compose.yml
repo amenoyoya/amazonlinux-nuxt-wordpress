@@ -65,7 +65,6 @@ services:
       # - 4000:1025 # SMTP Port
     network_mode: bridge
     environment:
-      PMA_HOST: db
       # VIRTUAL_HOST設定（nginx-proxy）
       VIRTUAL_HOST: mail.devel.localhost # localhost:3000 の代わりに mail.devel.localhost でアクセス可能に
       VIRTUAL_PORT: 8025
