@@ -10,7 +10,7 @@ services:
       # 共有ディレクトリ
       - ./html:/var/www/html # ドキュメントルート
       # virtualhost設定ファイル
-      - ./web/000-default.conf:/etc/httpd/conf.d/000-default.conf
+      - ./web/000-default.conf:/etc/apache2/sites-available/000-default.conf
       # php設定ファイルを共有
       - ./web/php.ini:/etc/php.d/php.ini
     ports:
