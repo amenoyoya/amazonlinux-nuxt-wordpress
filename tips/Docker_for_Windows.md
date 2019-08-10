@@ -30,7 +30,7 @@ Vagarantの挙動が不安定で開発が進まないときは、**Docker for Wi
 > SC config wuauserv start= auto
 > SC config bits start= auto
 > SC config cryptsvc start= auto
-> SC config trustedinstaller start= aut
+> SC config trustedinstaller start= auto
 ```
 
 
