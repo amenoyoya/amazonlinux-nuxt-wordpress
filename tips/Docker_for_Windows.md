@@ -24,13 +24,16 @@ Vagarantの挙動が不安定で開発が進まないときは、**Docker for Wi
 #### 「構成レジストリキーを読み取れません」エラーが発生する場合
 端末によっては上記の `Enable-WindowsOptionalFeature` コマンドが失敗することがある
 
-その場合は、管理者権限のコマンドプロンプトで以下を実行する
+基本的には再起動すれば上手くいくが、再起動してもダメな場合は、管理者権限のコマンドプロンプトで以下を実行する
 
 ```bash
 > SC config wuauserv start= auto
 > SC config bits start= auto
 > SC config cryptsvc start= auto
 > SC config trustedinstaller start= auto
+
+# 再起動
+> shutdown /r /t 0
 ```
 
 
