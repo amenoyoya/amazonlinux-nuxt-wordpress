@@ -1,0 +1,28 @@
+version: "3"
+
+services:
+  web:
+    build: ./web
+    ports:
+      - 5000:80 # localhost:5000 => container.web:80 (nginx-proxyコンテナを使っているならポート設定は不要)
+    links:
+      - flask # flaskコンテナとリンク
+    volumes:
+      - ./app:/var/www/app # アプリケーション開発ディレクトリ
+      # nginx設定
+      - ./web/nginx.conf:/etc/nginx/nginx.conf
+      - ./web/logs:/etc/nginx/logs
+    network_mode: bridge
+    command: nginx -g 'daemon off;' -c /etc/nginx/nginx.conf
+    environment:
+      TZ: Asia/Tokyo
+      # VIRTUAL_HOST設定（nginx-proxy）
+      VIRTUAL_HOST: nginx.localhost # localhost:5000 の代わりに nginx.localhost でアクセス可能に
+  flask:
+    build: ./flask
+    volumes:
+      - ./app:/var/www/app # アプリケーション開発ディレクトリ
+    network_mode: bridge
+    command: uwsgi --master --emperor /var/www/app/vassals --die-on-term
+    environment:
+      TZ: Asia/Tokyo

@@ -15,8 +15,6 @@ services:
       - ./web/php.ini:/etc/php.d/php.ini
     ports:
       - 1000:80 # localhost:1000 => container.web:80 (nginx-proxyコンテナを使っているならポート設定は不要)
-    stdin_open: true
-    tty: true
     network_mode: bridge
     environment:
       # dbコンテナのDBに接続するための環境設定
