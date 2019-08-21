@@ -63,7 +63,19 @@ Vagarantの挙動が不安定で開発が進まないときは、**Docker for Wi
 ### nginx-proxyの開始に失敗する
 `jwilder/nginx-proxy`のリバーシプロキシ機能を使ってvhosts環境で開発を行っている場合、Windows起動直後は、vhostsドライバ周りの問題で起動に失敗しやすい
 
-その場合、Docker on Windows を再起動してから、もう一度 `docker-compose start` を実行する
+その場合、Docker for Windows を再起動してから、もう一度 `docker-compose start` を実行する
+
+#### 再起動してもダメな場合
+```bash
+# ポートの使用状況を調べる
+> netstat -nao
+
+## -> ポート80番を使用しているプロセスを PIDから探す（タスクマネージャー使用）
+```
+
+大抵の場合、**com.docker.backend.exe**というプロセスがゾンビ化しているため、タスクマネージャーを使って終了させる
+
+その後、もう一度 Docker for Windows を起動する
 
 ---
 
