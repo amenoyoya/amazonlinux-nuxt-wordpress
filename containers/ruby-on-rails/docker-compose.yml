@@ -1,0 +1,69 @@
+version: "3"
+
+services:
+  rails:
+    build: .
+    links:
+      - db
+      - mailhog
+    ports:
+      - 5555:3000 # http://localhost:5555 => docker://rails:3000
+    volumes:
+      - ./app:/var/www/app
+    network_mode: bridge
+    stdin_open: true
+    tty: true
+    command: bundle exec rails s -p 3000 -b '0.0.0.0'
+    environment:
+      RAILS_ENV: development
+      LANG: C.UTF-8
+      TZ: Asia/Tokyo
+      DATABASE_URL: mysql2://root:root@db:3306
+      # VIRTUAL_HOST設定（nginx-proxy）
+      VIRTUAL_HOST: rails.localhost # localhost:5555 の代わりに rails.localhost でアクセス可能に
+      VIRTUAL_PORT: 3000
+
+  db:
+    build: ./db
+    volumes:
+      # DB永続化
+      - db-data:/var/lib/mysql
+      # 起動時にinitdb.d内で定義されたデータベースを構築する
+      - ./db/initdb.d:/docker-entrypoint-initdb.d
+    network_mode: bridge
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: carbuncle_development
+  
+  pma:
+    image: phpmyadmin/phpmyadmin:latest
+    links:
+      - db
+    ports:
+      - 5556:80 # http://localhost:5556 => docker://pma:80
+    volumes:
+      - /sessions
+    network_mode: bridge
+    environment:
+      PMA_ARBITRARY: 1
+      PMA_HOST: db
+      PMA_USER: root
+      PMA_PASSWORD: root
+      # VIRTUAL_HOST設定（nginx-proxy）
+      VIRTUAL_HOST: pma.rails.localhost # localhost:5556 の代わりに pma.rails.localhost でアクセス可能に
+      VIRTUAL_PORT: 80
+  
+  mailhog:
+    image: mailhog/mailhog
+    ports:
+      - 5557:8025 # HTTP Port: http://localhost:5557 => docker://mailhog:8025
+      # - 4000:1025 # SMTP Port
+    network_mode: bridge
+    environment:
+      # VIRTUAL_HOST設定（nginx-proxy）
+      VIRTUAL_HOST: mail.rails.localhost # localhost:5557 の代わりに mail.rails.localhost でアクセス可能に
+      VIRTUAL_PORT: 8025
+
+volumes:
+  db-data:
+    driver: local
