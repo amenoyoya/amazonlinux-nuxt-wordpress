@@ -27,15 +27,12 @@ services:
       DB_USERNAME: root
       DB_PASSWORD: laravel
   mysql:
-    image: mysql:5.7
+    build: ./db
     volumes:
       # DB永続化
       - db-data:/var/lib/mysql
       # 起動時にinitdb.d内で定義されたデータベースを構築する
       - ./db/initdb.d:/docker-entrypoint-initdb.d
-      # 設定ファイル共有
-      - ./db/my.cnf:/etc/mysql/conf.d/my.cnf
-    working_dir: /var/lib/mysql
     network_mode: bridge
     environment:
       MYSQL_ROOT_PASSWORD: laravel

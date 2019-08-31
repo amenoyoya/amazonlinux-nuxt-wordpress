@@ -1,4 +1,4 @@
-# nginx-uwsgi
+# nginx-uwsgi-flask
 
 ## Architecture
 
