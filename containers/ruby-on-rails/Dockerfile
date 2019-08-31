@@ -11,6 +11,6 @@ RUN apt-get update -qq && \
 COPY ./app/Gemfile $APP_ROOT/Gemfile
 COPY ./app/Gemfile.lock $APP_ROOT/Gemfile.lock
 
-RUN bundle install
+RUN bundle update && bundle install
 
 EXPOSE  3000
