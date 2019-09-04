@@ -12,7 +12,7 @@ services:
       # virtualhost設定ファイル
       - ./web/000-default.conf:/etc/apache2/sites-available/000-default.conf
       # php設定ファイルを共有
-      - ./web/php.ini:/etc/php.d/php.ini
+      - ./web/php.ini:/usr/local/etc/php/php.ini
     ports:
       - 1000:80 # localhost:1000 => container.web:80 (nginx-proxyコンテナを使っているならポート設定は不要)
     network_mode: bridge
