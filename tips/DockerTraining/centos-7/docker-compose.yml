@@ -1,0 +1,39 @@
+version: "3"
+
+services:
+  web:
+    build: ./web
+    links:
+      - db # dbコンテナとリンク
+    ports:
+      - 3333:80 # http://localhost:3333 => docker://web:80
+    volumes:
+      - ./html:/var/www/html # document root
+    stdin_open: true
+    tty: true
+    network_mode: bridge
+    command: /usr/sbin/httpd -DFOREGROUND
+  db:
+    build: ./db
+    volumes:
+      # DB永続化
+      - db-data:/var/lib/mysql
+      # 起動時にinitdb.d内で定義されたデータベースを構築する
+      - ./db/initdb.d:/docker-entrypoint-initdb.d
+    network_mode: bridge
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: web
+  pma:
+    image: phpmyadmin/phpmyadmin:latest
+    ports:
+      - 4444:80 # http://localhost:4444 => docker://pma:80
+    network_mode: bridge
+    environment:
+      PMA_HOST: db
+    links:
+      - db
+
+volumes:
+  db-data:
+    driver: local
