@@ -67,15 +67,20 @@ Vagarantの挙動が不安定で開発が進まないときは、**Docker for Wi
 
 #### 再起動してもダメな場合
 ```bash
+# 起動コンテナの一覧表示
+> docker container list
+
+# -> nginx-proxyコンテナ（ゾンビコンテナ）が起動している場合は削除する
+> docker rm -f <コンテナID>
+
 # ポートの使用状況を調べる
 > netstat -nao
 
-## -> ポート80番を使用しているプロセスを PIDから探す（タスクマネージャー使用）
+## -> ポート80, 443番を使用しているプロセスを PIDから探し、終了させる（タスクマネージャー使用）
+## ※ 大抵の場合、com.docker.backend.exe というプロセスを終了すれば問題ない
 ```
 
-大抵の場合、**com.docker.backend.exe**というプロセスがゾンビ化しているため、タスクマネージャーを使って終了させる
-
-その後、もう一度 Docker for Windows を起動する
+その後、もう一度 Docker Desktop を再起動する
 
 ---
 
