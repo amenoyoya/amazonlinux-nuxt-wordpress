@@ -15,6 +15,8 @@ services:
       - ./web/php.ini:/usr/local/etc/php/php.ini
     ports:
       - 1000:80 # localhost:1000 => container.web:80 (nginx-proxyコンテナを使っているならポート設定は不要)
+    # コンテナ内のApache実行ユーザー`www-data`のユーザーIDを環境変数`UID`に変更してApache起動
+    command: bash -c 'usermod -o -u ${UID} www-data; groupmod -o -g ${UID} www-data; apachectl -D FOREGROUND'
     network_mode: bridge
     environment:
       # dbコンテナのDBに接続するための環境設定
