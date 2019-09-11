@@ -29,6 +29,6 @@ services:
       - ./app:/var/www/app # アプリケーション開発ディレクトリ
     network_mode: bridge
     # uWSGI Emperor を使って複数のFlaskサーバーを起動できるようにする
-    command: uwsgi --master --emperor /var/www/app/vassals/*.ini --die-on-term
+    command: uwsgi --emperor /var/www/app/vassals/*.ini
     environment:
       TZ: Asia/Tokyo
