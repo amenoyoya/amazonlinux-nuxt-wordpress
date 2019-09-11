@@ -70,3 +70,49 @@
     $ docker-compose up -d
     ```
 - http://devel.localhost にアクセスして `phpinfo()` の内容が表示されることを確認する
+
+***
+
+## Trouble Shooting
+
+### 共有ディレクトリのパーミッション問題
+- DockerコンテナによるWeb開発をする際、ホストとコンテナで一部のディレクトリ（大抵はアプリケーションの本体ディレクトリ）を共有することが多い
+- ホストがWindowsなどのパーミッションの関係ないOSの場合は問題にならないが、Linux系OSの場合、ホストファイルシステムとゲスト（コンテナ）ファイルシステムでパーミッションの食い違いが起こる
+    - 例えば、ホストの`user`ユーザーの所有で`600`のパーミッションなら、コンテナ内のユーザーでそのファイル（ディレクトリ）に書き込みを行うことはできない
+
+#### 解決策
+- この問題は、**ホストでDockerを起動するユーザーのID**と**コンテナ内で共有ディレクトリに対して操作を行うユーザーのID**を一致させれば解決する
+    1. ホスト `/etc/passwd` と `/etc/group` を READ-ONLY でコンテナと共有
+        - **docker-compose.yml** (抜粋)
+            ```yaml
+            volumes:
+                - ./app:/var/www/app         # プロジェクトディレクトリを共有（例）
+                - /etc/passwd:/etc/passwd:ro # read_only(ro)で passwd を共有
+                - /etc/group:/etc/group:ro   # read_only(ro)で group を共有
+            ```
+        - 参考: https://qiita.com/yohm/items/047b2e68d008ebb0f001
+        - 利点:
+            - 手っ取り早くユーザー情報を共有できる利点がある
+            - Docker起動時に特殊な操作等を必要としない
+        - 欠点:
+            - ホストOSがLinux系OS以外では動かない（`/etc/passwd`, `/etc/group`があるホストOSでしか動かない）
+            - ホスト側に存在しないユーザーをコンテナ内で作成して使うことはできない
+    2. コンテナ起動時に コンテナ内ユーザーのIDを Docker実行ユーザーのIDに変更する
+        - **docker-compose.yml** (抜粋)
+            ```yaml
+            command: bash -c 'usermod -o -u ${UID} <コンテナ内ユーザー>; groupmod -o -g ${UID} <コンテナ内ユーザー>; <スタートアップ処理...>'
+            ```
+        - 参考: https://qiita.com/reflet/items/3516400c37c4f5b0cd6d
+        - 利点:
+            - ホストOSを選ばず汎用的に使うことができる
+            - ホスト側に存在しないユーザーをコンテナ内で作成して使うことも可能
+        - 欠点:
+            - Dockerコンテナ起動時、UIDを環境変数にexportしなければならない
+                ```bash
+                $ export UID && docker-compose up -d
+
+                # WindowsでDockerDesktopを使っている場合はUIDを合わせる必要はないため普通に起動して良い
+                ## ※ UID が空だという警告が出るのが気になる場合は、適当な値をセットして実行すれば良い
+                > set UID=1000
+                > docker-compose up -d
+                ```
