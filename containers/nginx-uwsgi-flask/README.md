@@ -36,7 +36,6 @@
  |   |_ requirements.txt # 依存Pythonモジュール記述用
  |
  |_ web/ # webコンテナ作成用
-     |_ logs/ # Nginxログファイル格納ディレクトリ
      |_ Dockerfile
      |_ nginx.conf # Nginxリバースプロキシ設定
 ```
