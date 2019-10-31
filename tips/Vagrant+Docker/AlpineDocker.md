@@ -92,3 +92,40 @@ $ exit
 # 仮想マシン再起動
 $ vagrant reload
 ```
+
+***
+
+## ゲストOSのプライベートIPに接続
+
+### ホストOSのVirtualBoxのIPを確認
+
+#### on Windows
+```powershell
+> ipconfig
+ :
+VirtualBox Host-Only Network:
+     :
+    192.168.XX.X # <= IPv4 アドレスを確認
+```
+
+#### on Ubuntu
+```bash
+$ ifconfig vboxnet0
+vboxnet0:
+    inet 192.168.XX.X # <= IPv4 アドレスを確認
+     :
+```
+
+### Vagrantfile設定
+上記で確認したIPのネットワーク部が同一で、ホスト部が被らないIPをVagrantfileに設定
+
+```ruby
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+Vagrant.configure("2") do |config|
+  config.vm.box = "generic/alpine38"
+  config.vbguest.auto_update = false # host-guest間の差分アップデートを無効化
+  config.vm.network "private_network", ip: "192.168.33.100" # <= vbox ip が 192.168.33.1 の場合
+  config.vm.synced_folder "./data/", "/data/"
+end
+```
