@@ -86,11 +86,21 @@ $ sudo adduser $USER docker
 
 # 一旦終了
 $ exit
+```
 
----
+### 仮想マシン環境のパッケージング
+vagrant box ファイルをパッケージングして、環境をコピーできるようにする
 
-# 仮想マシン再起動
-$ vagrant reload
+```bash
+# 仮想マシン停止
+$ vagrant halt
+
+# 環境パッケージング
+$ vagrant package # => package.box 生成
+
+# package.box をローカルboxに追加
+## mybox/alpine38 は分かりやすい任意のbox名にする
+$ vagrant box add mybox/alpine38 ./package.box
 ```
 
 ***
