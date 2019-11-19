@@ -1,0 +1,21 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# 完成版Vagrantfile
+Vagrant.configure("2") do |config|
+  config.vm.box = "generic/alpine38"
+  config.vbguest.auto_update = false # host-guest間の差分アップデートを無効化
+  config.ssh.insert_key = false
+
+  # virtual hosts
+  config.hostsupdater.aliases = [
+    "example.local",
+  ]
+
+  # Create a private network, which allows host-only access to the machine
+  # using a specific IP.
+  config.vm.network "private_network", ip: "172.17.8.100"
+
+  # DocumentRootをホストディレクトリと接続
+  config.vm.synced_folder "./htdocs/", "/var/www/localhost/htdocs/"
+end
