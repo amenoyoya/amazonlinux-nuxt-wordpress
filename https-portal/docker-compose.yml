@@ -1,0 +1,36 @@
+version: "3"
+services:
+  https-portal:
+    image: steveltn/https-portal:1
+    links:
+      - web # webコンテナとリンク
+    ports:
+      - 80:80 # http port
+      - 443:443 # https port
+    restart: always
+    environment:
+      # リバースプロキシ: ドメイン名 => Dockerコンテナ
+      DOMAINS: 'web.local -> http://web:80' # https://web.local => webコンテナ:80番ポート
+      # STAGE: local | staging | production から選択
+      ## local: 自己証明書（オレオレ証明書）でSSL化
+      ## staging, production: 実際に証明書を発行してSSL化
+      STAGE: local 
+    # 実際にSSL証明書を取得する場合は、ローカルストレージをマウントしてファイルを永続化する必要がある
+    ## 永続化せず、毎回証明書を発行していると回数制限に引っかかる
+    # volumes:
+    #   - ./org-chimata-ssl-certs:/var/lib/https-portal
+  web:
+    build: ./web
+    volumes:
+      # 共有ディレクトリ
+      - ./html:/var/www/html # ドキュメントルート
+      # virtualhost設定ファイル
+      - ./web/000-default.conf:/etc/apache2/sites-available/000-default.conf
+      # php設定ファイルを共有
+      - ./web/php.ini:/usr/local/etc/php/php.ini
+    # コンテナ内のApache実行ユーザー`www-data`のユーザーIDを環境変数`UID`に変更してApache起動
+    command: bash -c 'usermod -o -u ${UID} www-data; groupmod -o -g ${UID} www-data; apachectl -D FOREGROUND'
+    environment:
+      # Composer設定
+      COMPOSER_ALLOW_SUPERUSER: 1 # root権限での実行を許可
+      COMPOSER_NO_INTERACTION: 1  # 非対話的にインストール
