@@ -39,9 +39,49 @@
 
 プラグインのインストールや設定については後述
 
-### Ubuntu 18.04 on WSL 環境構築
+### Windows Insider Program 登録
 基本的に Ubuntu 18.04 環境で開発を行いたいため、Windows Subsystem for Linux (WSL) に Ubuntu をインストールして使用する
 
+ただし、2019年12月時点では、WSL上でDockerを動かすことはできない
+
+2020年春に提供予定の WSL2 で、Docker等を含むすべてのLinux機能を使えるようになる予定であるが、ここでは Windows Insider Program に登録し、一足先に WSL2 を使えるようにする
+
+なお、Windows Insider Program に登録し、ベータ版のWindowsをインストールすると動作が不安定になることもあるため、不安がある場合は、VirtualBox + Vagrant 環境でしばらく我慢しても良い
+
+個人的には、VirtualBox + Vagrant 環境は以下の理由からあまり推奨はしていない
+
+- 動作が不安定で重い
+- Linux環境へのアクセスにSSH接続が必要でシームレスな開発が難しい
+
+#### Windows Insider Program 参加
+**Windows Insider Program 参加の前に必ずバックアップを取っておくこと**（動作が不安定になった場合に、バックアップを取っておかないと元に戻せなくなる）
+
+まず、`Win + X` |> `N` キー => システム設定 起動
+
+- 設定 > 更新とセキュリティ > Windows Insider Program
+    - Windows Insider Program に参加する
+        - ※ Microsoftアカウントでのログイン必須のため、アカウントを持っていない場合は新規作成する
+
+![windows_insider_program.png](./img/windows_insider_program.png.png)
+
+- どのようなコンテンツの受け取りを希望されますか？
+    - => `Windowsのアクティブな開発` を選択
+- プレビュービルドを受け取る頻度はどの程度を希望されますか？
+    - => `スロー` を選択
+
+#### Windows Update 実行
+WSL2 を使うためには、ビルドバージョン 18917 以降のWindows10である必要がある
+
+`Win + X` |> `N` キー => システム設定 起動
+
+- 設定 > システム > バージョン情報
+    - ここで現在のOSビルドバージョンを確認し、18917以前のバージョンならアップデートを行う
+- 設定 > 更新とセキュリティ
+    - Windows Update を実行する
+
+### Ubuntu 18.04 on WSL2 環境構築
+
+#### Ubuntu 18.04 on WSL インストール
 `Win + X` |> `A` キー => 管理者権限PowerShell 起動
 
 ```powershell
@@ -68,9 +108,36 @@ For more information visit: https://aka.ms/wslusers
 Enter new UNIX username: # ログインユーザ名を設定
 Enter new UNIX password: # ログインパスワードを設定
 Retype new UNIX password: # パスワードをもう一度入力
+
+# 起動が完了したら一旦終了
+$ exit
 ```
 
-以降の操作は **Ubuntu 18.04** の項を参照
+#### WSL1 => WSL2 にバージョン変更
+`Win + X` |> `A` キー => 管理者権限PowerShell 起動
+
+```powershell
+# 現在の WSL の状態を確認
+## Ubuntu-18.04 の VERSION（WSLバージョン）が 1 になっているはず
+> wsl -l -v
+  NAME            STATE           VERSION
+* Ubuntu-18.04    Stopped         1
+
+# WSL2（仮想プラットフォーム）を有効化する
+> Enable-WindowsOptionalFeature -Online -FeatureName VirtualMachinePlatform
+この操作を完了するために、今すぐコンピューターを再起動しますか?
+[Y] Yes  [N] No  [?] ヘルプ (既定値は "Y"): # そのままENTERして再起動
+
+# 再起動したら、WSL1 => WSL2 にバージョン変更
+> wsl --set-version Ubuntu-18.04 2
+
+# 再度 WSL の状態を確認（VERSION = 2 になっていればOK）
+> wsl -l -v
+  NAME            STATE           VERSION
+* Ubuntu-18.04    Stopped         2
+```
+
+以降の操作は **Ubuntu 18.04 環境構築** の項を参照
 
 ***
 
