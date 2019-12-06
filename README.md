@@ -11,6 +11,8 @@
 
 ## Projects
 
+- [環境構築](./Environment.md)
+    - Windows 10, Ubuntu 18.04 における最新安定環境構築
 - [Docker入門](./tips/DockerTraining)
     - Webプログラマに転職して初めてDockerに触ったときの備忘録
     - そのうちちゃんと整理したい
