@@ -90,11 +90,24 @@ Dockerコンテナを用いたWeb開発の最近のトレンドでは、仮想�
 # vi: set ft=ruby :
 
 Vagrant.configure("2") do |config|
-  config.vm.box = "generic/ubuntu1804" # Boxイメージ（仮想OS）: Ubuntu 18.04 を指定
-  
+  # Boxイメージ（仮想OS）: Ubuntu 18.04 を指定
+  config.vm.box = "yoya/ubuntu1804"
+
+  # VirtualBox Guest Additions を毎回インストールしていると起動が遅くなるため無効化
+  config.vbguest.auto_update = false
+
   # IPアドレス共有
   ## 仮想マシンのネットワークとWindowsホスト側のネットワークをブリッジモード接続する
   config.vm.network "public_network"
+
+  # 共有ディレクトリ
+  ## Windowsユーザホームディレクトリを仮想マシンの /win/ ディレクトリにマウント
+  config.vm.synced_folder "~", "/win"
+
+  # VirtualBox起動時の挙動を確認したい場合に有効化
+  # config.vm.provider :virtualbox do |vb|
+  #   vb.gui = true
+  # end
 end
 ```
 
@@ -106,6 +119,10 @@ PowerShellに戻り、以下のコマンドを実行
 > vagrant up
 
 ## => 初回起動時はBoxイメージのダウンロードに時間がかかるため、しばらく待つ
+
+# 起動したら VirtualBox Guest Additions をインストール
+## => 3Dアクセラレーションにより動作高速化や不安定な動作を解消したりする
+> vagrant vbguest
 ```
 
 起動した仮想マシンは、リモートサーバと同じような扱いになるため、サーバIPアドレス（Vagrantfile に設定した `17.17.8.100`）に SSH で接続して操作する必要がある
@@ -140,6 +157,18 @@ VSCode上で `Shift + Ctrl + P` キーを押してコマンドパレットを表
 このVSCode上で `Shift + Ctrl + @` キーを押すと、Ubuntuのターミナルが起動するため、以降の操作はこのターミナル上で行う
 
 ![remote-vscode.png](./img/remote-vscode.png)
+
+#### ネットワークサービスの停止
+仮想マシンは、Windowsホストとネットワークを共有しているため、自身でネットワークサービスをもつ必要はない
+
+特にUbuntuマシンは起動時に、ネットワークサービス関連の立ち上げに非常に時間がかかるため、無効化してしまった方が良い
+
+そのため、仮想Ubuntu接続済みの VSCode のターミナルで以下のコマンドを実行する
+
+```bash
+$ sudo systemctl disable systemd-networkd-wait-online.service
+$ sudo systemctl mask systemd-networkd-wait-online.service
+```
 
 #### 仮想マシンの停止
 仮想マシンを停止する場合は、PowerShellで `vagrant halt` コマンドを実行する
