@@ -7,7 +7,6 @@ services:
     ports:
       - 80:80 # http port
       - 443:443 # https port
-    restart: always
     environment:
       # リバースプロキシ: ドメイン名 => Dockerコンテナ
       DOMAINS: 'web.local -> http://web:80' # https://web.local => webコンテナ:80番ポート
