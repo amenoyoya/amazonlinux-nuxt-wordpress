@@ -138,9 +138,24 @@ VSCode上で `Shift + Ctrl + P` キーを押してコマンドパレットを表
 
 その後 `default` というホストを選択すると、仮想マシンに接続された状態のVSCodeが起動する
 
-このVSCode上で `Shift + Ctrl + @` キーを押すと、Ubuntuのターミナルが起動するため、以降の操作はこのターミナル上で行う（**Ubuntu 18.04 環境構築** の項参照）
+このVSCode上で `Shift + Ctrl + @` キーを押すと、Ubuntuのターミナルが起動するため、以降の操作はこのターミナル上で行う
 
 ![remote-vscode.png](./img/remote-vscode.png)
 
+#### 仮想マシン内ネットワークの設定
+仮想マシン内の curl で https のURLからダウンロードしようとすると失敗する
+
+そのため、仮想マシンのターミナルで以下のコマンドを実行し、SSL検証を無効化しておく
+
+```bash
+$ echo 'check-certificate=off' >> ~/.curlrc
+```
+
 #### 仮想マシンの停止
 仮想マシンを停止する場合は、PowerShellで `vagrant halt` コマンドを実行する
+
+***
+
+## Docker環境構築
+
+**Ubuntu 18.04 環境構築** の項参照
