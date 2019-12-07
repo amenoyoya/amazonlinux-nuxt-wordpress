@@ -93,9 +93,8 @@ Vagrant.configure("2") do |config|
   config.vm.box = "generic/ubuntu1804" # Boxイメージ（仮想OS）: Ubuntu 18.04 を指定
   
   # IPアドレス共有
-  ## 仮想マシンのネットワークとWindowsホスト側のネットワークを接続する
-  ## 172.17.8.XXX の XXX（ホスト部）は重複しない任意の値を指定する（ここでは 100 を指定）
-  config.vm.network "private_network", ip: "172.17.8.100"
+  ## 仮想マシンのネットワークとWindowsホスト側のネットワークをブリッジモード接続する
+  config.vm.network "public_network"
 end
 ```
 
@@ -141,15 +140,6 @@ VSCode上で `Shift + Ctrl + P` キーを押してコマンドパレットを表
 このVSCode上で `Shift + Ctrl + @` キーを押すと、Ubuntuのターミナルが起動するため、以降の操作はこのターミナル上で行う
 
 ![remote-vscode.png](./img/remote-vscode.png)
-
-#### 仮想マシン内ネットワークの設定
-仮想マシン内の curl で https のURLからダウンロードしようとすると失敗する
-
-そのため、仮想マシンのターミナルで以下のコマンドを実行し、SSL検証を無効化しておく
-
-```bash
-$ echo 'check-certificate=off' >> ~/.curlrc
-```
 
 #### 仮想マシンの停止
 仮想マシンを停止する場合は、PowerShellで `vagrant halt` コマンドを実行する
