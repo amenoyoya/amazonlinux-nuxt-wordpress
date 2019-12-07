@@ -108,3 +108,39 @@ PowerShellに戻り、以下のコマンドを実行
 
 ## => 初回起動時はBoxイメージのダウンロードに時間がかかるため、しばらく待つ
 ```
+
+起動した仮想マシンは、リモートサーバと同じような扱いになるため、サーバIPアドレス（Vagrantfile に設定した `17.17.8.100`）に SSH で接続して操作する必要がある
+
+そのため、ファイルの編集等は、操作感がいまいちなターミナルエディタ（vim, nano など）を使って行う必要がある
+
+しかし、VSCodeエディタにはこういったリモート開発をシームレスに行うための **Remote Development** プラグインがあるため、非常にWeb開発が行いやすくなっている
+
+#### VSCode Remote Development プラグインの導入
+VSCodeを起動し、`Shift + Ctrl + X` キーを押してプラグイン検索窓を開く
+
+`Remote Development` で検索し、プラグインをインストールする
+
+![remote-development.png](./img/remote-development.png)
+
+#### 仮想マシンへのアクセス
+PowerShell に戻り、仮想マシンのSSH接続情報を設定ファイルに書き出す
+
+```powershell
+# vagrant ssh-config |> 出力内容を ~\.ssh\config ファイルに書き込む
+> vagrant ssh-config | Out-File -Append -Encoding utf8 ~\.ssh\config
+```
+
+上記コマンドで、仮想マシンへのSSH接続情報が、ホスト名 `default` で登録される
+
+VSCode上で `Shift + Ctrl + P` キーを押してコマンドパレットを表示し、`connect`と打つと `Remote-SSH: Connect to Host...` というコマンドが出てくるはずなので、このコマンドを実行する
+
+![remote-ssh.png](./img/remote-ssh.png)
+
+その後 `default` というホストを選択すると、仮想マシンに接続された状態のVSCodeが起動する
+
+このVSCode上で `Shift + Ctrl + @` キーを押すと、Ubuntuのターミナルが起動するため、以降の操作はこのターミナル上で行う（**Ubuntu 18.04 環境構築** の項参照）
+
+![remote-vscode.png](./img/remote-vscode.png)
+
+#### 仮想マシンの停止
+仮想マシンを停止する場合は、PowerShellで `vagrant halt` コマンドを実行する
