@@ -1,35 +1,41 @@
-version: "2"
+version: "3"
 
 services:
   # プロキシサーバ
   nginx-proxy:
     image: jwilder/nginx-proxy
-    container_name: nginx-proxy
     privileged: true # ルート権限
     ports:
       - "80:80" # http
       - "443:443" # https
     volumes:
       - /var/run/docker.sock:/tmp/docker.sock:ro
-      - ./certs:/etc/nginx/certs:ro # letsencryptコンテナがSSL証明書を ./certs/ に作成
-      - /etc/nginx/vhost.d
       - /usr/share/nginx/html
+      - /etc/nginx/vhost.d
+      - ./certs:/etc/nginx/certs:ro # letsencryptコンテナが ./certs/ に作成したSSL証明書を読む
     # restart: always # Dockerサービス起動時に自動起動
     # 他のコンテナを見つけられるようにブリッジモードにする（見つけて欲しいコンテナもブリッジモードにする）
     ## もしくは共有のネットワークを作成する
     network_mode: bridge
+    environment:
+      DHPARAM_GENERATION: "false"
+    labels:
+      com.github.jrcs.letsencrypt_nginx_proxy_companion.nginx_proxy: "true"
 
   # 無料SSL証明書発行
   letsencrypt:
     image: jrcs/letsencrypt-nginx-proxy-companion
-    container_name: letsencrypt
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./certs:/etc/nginx/certs:rw
-    volumes_from:
-      - nginx-proxy
+      - /usr/share/nginx/html
+      - /etc/nginx/vhost.d
+      - ./certs:/etc/nginx/certs:rw # ./certs/ にSSL証明書を書き込めるように rw モードで共有
+    depends_on:
+      - nginx-proxy # nginx-proxyコンテナの後で起動
     # restart: always # Dockerサービス起動時に自動起動
     network_mode: bridge
+    environment:
+      NGINX_PROXY_CONTAINER: nginx-proxy
   
   # アプリケーション側Dockerコンテナに必要な環境変数
   # - VIRTUAL_HOST: example.com
