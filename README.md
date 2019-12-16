@@ -28,8 +28,12 @@
 ## nginx-proxy
 
 - [nginx-proxy](./nginx-proxy)
-    - VirtualHost名で他のコンテナに上手いことリクエストを振り分けてくれるプロキシコンテナ
-    - 起動すると ポート80, 443 を使用する
+    - `nginx-proxy`コンテナ
+        - VirtualHost名で他のコンテナに上手いことリクエストを振り分けてくれるプロキシコンテナ
+        - 起動すると ポート80, 443 を使用する
+    - `letsencrypt`コンテナ
+        - nginx-proxy と連携して VirtualHost名を自動的に https化してくれるコンテナ
+        - Let's Encrypt で無料SSLを発行する
 
 ### 使い方
 - `nginx-proxy`コンテナ起動
@@ -60,6 +64,12 @@
               # VIRTUAL_HOST設定（nginx-proxy）
               VIRTUAL_HOST: devel.localhost # localhost:1000 の代わりに devel.localhost でアクセス可能に
               VIRTUAL_PORT: 80
+              # Let's Encrypt 設定（letsencrypt）
+              LETSENCRYPT_HOST: devel.localhost # https://devel.localhost でアクセス可能に
+              LETSENCRYPT_EMAIL: admin@example.com # Let's Encrypt 申請時のメールアドレス: 適当でも大丈夫
+              # ローカル開発時は letsencryptコンテナがオレオレ証明書として発行する default.cert を利用する
+              ## 本番環境では CERT_NAME はコメントアウトする
+              CERT_NAME: default
         ```
     - **php72/html/index.php**
         ```php
