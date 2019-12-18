@@ -8,6 +8,8 @@ NginxとLet’s Encryptを内包している
 
 DNS登録されているドメインなら実際に証明書を取得し、ローカルの場合はオレオレ証明書（自己証明書）に切り替えて、https対応のコンテナを簡単に作成することができる
 
+※ 実運用上は、複数の docker-compose.yml にまたがって使用できる [nginx-proxy](../nginx-proxy) 構成（jwilder/nignx-proxy + letsencrypt-nginx-proxy-companion 構成）の方が使い勝手が良いため、筆者はそちらの構成を使っている
+
 ### 構成
 最も単純な PHP + Apache の構成は以下のようになる
 
