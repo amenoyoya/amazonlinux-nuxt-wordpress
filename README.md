@@ -61,14 +61,18 @@
             privileged: true
             network_mode: bridge # nginx-proxy に見つけてもらうためにブリッジモードに
             environment:
+              # Composer設定
+              COMPOSER_ALLOW_SUPERUSER: 1 # root権限での実行を許可
+              COMPOSER_NO_INTERACTION: 1  # 非対話的にインストール
+              
               # VIRTUAL_HOST設定（nginx-proxy）
-              VIRTUAL_HOST: devel.localhost # localhost:1000 の代わりに devel.localhost でアクセス可能に
+              VIRTUAL_HOST: web.local # http://web.local => docker://web:80
               VIRTUAL_PORT: 80
-              # Let's Encrypt 設定（letsencrypt）
-              LETSENCRYPT_HOST: devel.localhost # https://devel.localhost でアクセス可能に
-              LETSENCRYPT_EMAIL: admin@example.com # Let's Encrypt 申請時のメールアドレス: 適当でも大丈夫
-              # ローカル開発時は letsencryptコンテナがオレオレ証明書として発行する default.cert を利用する
-              ## 本番環境では CERT_NAME はコメントアウトする
+              
+              # 本番環境ではコメントアウトを外し Let's Encrypt 申請させる
+              # LETSENCRYPT_HOST: web.local # https://web.local
+              # LETSENCRYPT_EMAIL: admin@web.local  
+              # 本番環境ではコメントアウトする
               CERT_NAME: default
         ```
     - **php72/html/index.php**

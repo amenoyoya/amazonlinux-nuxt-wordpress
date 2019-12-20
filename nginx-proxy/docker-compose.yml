@@ -37,10 +37,11 @@ services:
     environment:
       NGINX_PROXY_CONTAINER: nginx-proxy
   
-  # アプリケーション側Dockerコンテナに必要な環境変数
-  # - VIRTUAL_HOST: example.com
-  # - VIRTUAL_PORT: 80
-  # - LETSENCRYPT_HOST: example.com
-  # - LETSENCRYPT_EMAIL: admin@example.com
-  # ローカル開発時に必要な環境変数
-  # - CERT_NAME: default
+  # アプリケーション側Dockerコンテナに必要な環境変数（共通）
+  ## - VIRTUAL_HOST: example.com
+  ## - VIRTUAL_PORT: 80 (80番ポートなら省略可)
+  # 本番環境のアプリケーション側Dockerコンテナに必要な環境変数
+  ## - LETSENCRYPT_HOST: example.com（指定するとLet's Encrypt申請するため、ローカル開発時は指定しない）
+  ## - LETSENCRYPT_EMAIL: admin@example.com (Let's Encrypt申請時メールアドレス｜適当でも大丈夫)
+  # ローカル開発時のアプリケーション側Dockerコンテナに必要な環境変数
+  ## - CERT_NAME: default (自己証明書を使う)
