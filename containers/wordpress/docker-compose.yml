@@ -1,0 +1,37 @@
+version: "3"
+
+services:
+  wordpress:
+    image: wordpress:latest
+    links:
+      - db # dbコンテナとリンク
+    ports:
+      - "8000:80" # http://localhost:8000 => docker://wordpress:80
+    network_mode: bridge # 全てのDockerコンテナをブリッジ接続
+    environment:
+      WORDPRESS_DB_HOST: db:3306 # docker://db:3306 をDBホストにする
+      WORDPRESS_DB_PASSWORD: root # = docker://db.environment.MYSQL_ROOT_PASSWORD
+  db:
+    build: ./db
+    volumes:
+      # DB永続化
+      - db-data:/var/lib/mysql
+      # 起動時にinitdb.d内で定義されたデータベースを構築する
+      - ./db/initdb.d:/docker-entrypoint-initdb.d
+    network_mode: bridge # 全てのDockerコンテナをブリッジ接続
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: wordpress
+  pma:
+    image: phpmyadmin/phpmyadmin:latest
+    ports:
+      - 8001:80
+    links:
+      - db
+    network_mode: bridge
+    environment:
+      PMA_HOST: db
+
+volumes:
+  db-data:
+    driver: local

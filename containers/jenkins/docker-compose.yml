@@ -1,0 +1,10 @@
+version: "3"
+services:
+  jenkins:
+    image: jenkins:latest
+    ports:
+      - 8888:8080
+    volumes:
+      - ./jenkins_home:/var/jenkins_home
+
+# 管理者パスワード: /var/jenkins_home/secrets/initialAdminPassword
