@@ -1,0 +1,20 @@
+version: "3"
+
+services:
+  # go application container
+  ## コマンドとして使うことを想定
+  ## $ docker-compose run --rm go ...
+  go:
+    # Alpine Linux with golang image をベースにする
+    image: golang:alpine
+    entrypoint:
+      # コンテナ実行時 go コマンド実行
+      - go
+    volumes:
+      # ./ => docker://app:/go/ にマウント
+      - ./:/go/
+    # 作業ディレクトリ: docker://app:/go/
+    working_dir: /go/
+    environment:
+      # TimeZone を Asia/Tokyo に
+      TZ: Asia/Tokyo
