@@ -2,7 +2,7 @@ version: "3"
 
 # サービスコンテナ
 services:
-  # webコンテナ
+  # apache + php + wordpress コンテナ
   web:
     build:
       context: ./docker/web # ./docker/web/Dockerfile からビルド
@@ -10,8 +10,9 @@ services:
         UID: $UID # Docker実行ユーザIDをビルド時に使用
     links:
       - db # dbコンテナとリンク
+      - smtp # smtpコンテナとリンク
     ports:
-      - "8000:80" # http://localhost:8000 => docker://wordpress:80
+      - "8000:80" # http://localhost:8000 => docker://web:80
     volumes:
       # WordPressデータを ./web-data/ ディレクトリに展開
       - ./web-data/:/var/www/html/
