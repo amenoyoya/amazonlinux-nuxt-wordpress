@@ -8,6 +8,9 @@ RUN apt-get update && \
     apt-get install -y wget tar && \
     : 'Rewriteエンジン有効化' && \
     a2enmod rewrite && \
+    : 'メール送信サーバ変更: sendmail -> mhsendmail' && \
+    wget https://github.com/mailhog/mhsendmail/releases/download/v0.2.0/mhsendmail_linux_amd64 -O /usr/local/bin/mhsendmail && \
+    chmod +x /usr/local/bin/mhsendmail && \
     : 'www-data ユーザの UID をDocker実行ユーザのものに合わせる' && \
     usermod -o -u $UID www-data && groupmod -o -g $UID www-data && \
     : 'www-data ユーザで sudo 実行可能に' && \

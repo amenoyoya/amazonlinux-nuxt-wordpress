@@ -32,6 +32,7 @@
                       # dbコンテナ: mysql:5.7
                       ## ┗ db-dataボリュームコンテナ
                       # pmaコンテナ: phpmyadmin/phpmyadmin:latest | http://localhost:8001
+                      # smtpコンテナ: mailhog/mailhog | http://localhost:8002
 ```
 
 ### Environment

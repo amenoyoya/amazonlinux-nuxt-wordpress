@@ -53,6 +53,12 @@ services:
       - db
     environment:
       PMA_HOST: db
+  # mailhogコンテナ
+  smtp:
+    image: mailhog/mailhog
+    ports:
+      - 8002:8025 # HTTP Port | http://localhost:8002 => docker://smtp:8025
+      - 8003:1025 # SMTP Port | http://localhost:8003 => docker://smtp:1025
 
 # ボリュームコンテナ
 volumes:
