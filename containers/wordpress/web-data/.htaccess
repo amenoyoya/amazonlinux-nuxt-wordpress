@@ -1,0 +1,5 @@
+RewriteEngine On
+RewriteBase /
+
+# /* => /wordpress/*
+RewriteRule ^(?!wordpress/)(.*)$ /wordpress/$1

@@ -1,37 +1,60 @@
 version: "3"
 
+# サービスコンテナ
 services:
-  wordpress:
-    image: wordpress:latest
+  # webコンテナ
+  web:
+    build:
+      context: ./docker/web # ./docker/web/Dockerfile からビルド
+      args:
+        UID: $UID # Docker実行ユーザIDをビルド時に使用
     links:
       - db # dbコンテナとリンク
     ports:
       - "8000:80" # http://localhost:8000 => docker://wordpress:80
-    network_mode: bridge # 全てのDockerコンテナをブリッジ接続
+    volumes:
+      # WordPressデータを ./web-data/ ディレクトリに展開
+      - ./web-data/:/var/www/html/
+      # virtualhost設定ファイルを反映
+      - ./docker/web/000-default.conf:/etc/apache2/sites-available/000-default.conf
+      # php設定ファイルを反映
+      - ./docker/web/php.ini:/usr/local/etc/php/php.ini
     environment:
       WORDPRESS_DB_HOST: db:3306 # docker://db:3306 をDBホストにする
-      WORDPRESS_DB_PASSWORD: root # = docker://db.environment.MYSQL_ROOT_PASSWORD
+      WORDPRESS_DB_USER: wp_user # = docker://db.environemt.MYSQL_USER
+      WORDPRESS_DB_PASSWORD: wp_password # = docker://db.environment.MYSQL_PASSWORD
+      WORDPRESS_DB_NAME: wordpress # = docker://db.environment.MYSQL_DATABASE
+      WORDPRESS_DB_CHARSET: utf8mb4 # WordPressのデータベース文字コードを utf8mb4 に
+      WORDPRESS_DB_COLLATE: utf8mb4_general_ci # WordPressのデータベース照合順序を utf8mb4_general_ci に
+      WORDPRESS_DEBUG: "false" # WordPressデバッグモードを false に
+  # dbコンテナ
   db:
-    build: ./db
+    build: ./docker/db
     volumes:
-      # DB永続化
-      - db-data:/var/lib/mysql
+      # DB永続化: db-dataボリュームコンテナをマウント
+      - db-data:/var/lib/mysql/
       # 起動時にinitdb.d内で定義されたデータベースを構築する
-      - ./db/initdb.d:/docker-entrypoint-initdb.d
-    network_mode: bridge # 全てのDockerコンテナをブリッジ接続
+      - ./docker/db/initdb.d/:/docker-entrypoint-initdb.d/
+      # ダンプデータ共有用ディレクトリ
+      - ./docker/db/dump/:/var/dump/
+    # 作業ディレクトリ
+    working_dir: /var/dump/
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: wordpress
+      MYSQL_ROOT_PASSWORD: root # rootユーザパスワード
+      MYSQL_USER: wp_user # データベース使用ユーザ名
+      MYSQL_PASSWORD: wp_password # 上記ユーザのパスワード
+      MYSQL_DATABASE: wordpress # 使用データベース名
+  # phpmyadminコンテナ
   pma:
     image: phpmyadmin/phpmyadmin:latest
     ports:
-      - 8001:80
+      - "8001:80" # http://localhost:8001 => docker://pma:80
     links:
       - db
-    network_mode: bridge
     environment:
       PMA_HOST: db
 
+# ボリュームコンテナ
 volumes:
   db-data:
     driver: local
