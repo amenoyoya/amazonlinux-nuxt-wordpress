@@ -16,7 +16,7 @@ RUN apt update && apt upgrade -y && \
     : 'jupyterユーザ追加（ユーザIDをDocker実行ユーザIDと合わせる）' && \
     useradd -u $UID -m jupyter && \
     : 'jupyterユーザをsudoersに追加' && \
-    echo 'jupyter ALL=(ALL) NOPASSWORD:ALL' >> /etc/sudoers && \
+    echo 'jupyter ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers && \
     : 'jupyterユーザのパスワードを`password`に変更' && \
     echo 'jupyter:password' | chpasswd
 
