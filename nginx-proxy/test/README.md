@@ -2,6 +2,8 @@
 
 ## nignx-proxy + letsencrypt-nginx-proxy-companion 構成
 
+![nginx-proxy.png](../../img/nginx-proxy.png)
+
 ### jwilder/nginx-proxy
 起動しているDockerコンテナを自動的に認識し、リクエストされたホスト名に紐付いているコンテナに上手いこと振り分けてくれるリバースプロキシサーバ
 

@@ -27,6 +27,8 @@
 
 ## nginx-proxy
 
+![nginx-proxy.png](./img/nginx-proxy.png)
+
 - [nginx-proxy](./nginx-proxy)
     - `nginx-proxy`コンテナ
         - VirtualHost名で他のコンテナに上手いことリクエストを振り分けてくれるプロキシコンテナ

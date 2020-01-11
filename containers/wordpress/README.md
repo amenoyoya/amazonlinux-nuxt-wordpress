@@ -10,6 +10,8 @@
 
 ## Docker
 
+![wordpress.png](../../img/wordpress.png)
+
 ### Structure
 ```bash
 ./
