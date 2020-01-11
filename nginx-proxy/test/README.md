@@ -30,21 +30,23 @@
 
 ```bash
 ./
-|_ certs/ # SSL証明書格納ディレクトリ
+|_ docker/ # Dockerコンテナビルド設定
+|   |_ certs/ # SSL証明書格納ディレクトリ
+|   |_ web/   # webコンテナ
+|       |_ 000-default.conf # Apacheデフォルト設定
+|       |_ php.ini          # PHP設定
+|       |_ Dockerfile       # webコンテナビルドファイル
 |
-|_ html/ # Web公開ディレクトリ
+|_ www-data/ # Web公開ディレクトリ
 |   |_ index.php
 |
-|_ web/  # webコンテナ
-|   |_ 000-default.conf # Apacheデフォルト設定
-|   |_ php.ini          # PHP設定
-|   |_ Dockerfile       # webコンテナビルドファイル
-|
 |_ docker-compose.yml # Docker構成
-                      # nginx-proxyコンテナ: リバースプロキシ
+                      # nginx-proxyコンテナ: ホスト名に対応したコンテナに振り分けるリバースプロキシ
                       # letsencryptコンテナ: nginx-proxy と連動してホスト名をhttps化
-                      # webコンテナ: php:7.2-apache | https://web.local
+                      # webコンテナ: php:7.3-apache | https://web.local/
 ```
+
+![letsencrypt-nginx-proxy-test.png](../../img/letsencrypt-nginx-proxy-test.png)
 
 ***
 
