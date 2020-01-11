@@ -21,6 +21,8 @@
                       ## JupyterNotebook + Julia 1.3.1 を同梱
 ```
 
+![jupyter-julia.png](../../img/jupyter-julia.png)
+
 ### Usage
 ```bash
 # jupyterコンテナ内の作業ユーザ（jupyter）とDocker実行ユーザのUIDを合わせてコンテナビルド

@@ -17,6 +17,8 @@
 |_ docker-compose.yml # appコンテナ: golang:alpine
 ```
 
+![golang.png](../../img/golang.png)
+
 ### Usage
 基本的に Dockerコンテナを以下のようにコマンドとして使うことを想定している
 
