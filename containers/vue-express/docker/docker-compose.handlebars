@@ -1,0 +1,67 @@
+version: "3"
+
+services:
+  # express web server
+  express:
+    build:
+      context: ./ # ./Dockerfile をビルド
+      args:
+        # Docker実行ユーザIDをビルド時に使用
+        UID: $UID
+    volumes:
+      # アプリケーション開発ディレクトリ
+      - ./app/:/home/node/app/
+{{#if noproxy}}
+    network_mode: bridge
+{{/if}}
+    environment:
+      TZ: Asia/Tokyo
+      # puppeteerがインストール済みのChromeを使うように設定
+      ## 参考: https://github.com/puppeteer/puppeteer/blob/master/docs/troubleshooting.md
+      PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
+      # VIRTUAL_HOST設定（nginx-proxy）
+{{#if host}}
+      VIRTUAL_HOST: {{host}} # http://{{host}}/ => docker://express:3333
+      LETSENCRYPT_HOST: {{host}}
+{{#if email}}
+      LETSENCRYPT_EMAIL: {{email}}
+{{else}}
+      LETSENCRYPT_EMAIL: admin@{{host}}
+{{/if}}
+{{else}}
+      CERT_NAME: default # ローカル開発時は自己証明書を使う
+      VIRTUAL_HOST: web.local # http://web.local/ => docker://express:3333
+{{/if}}
+      VIRTUAL_PORT: 3333
+
+{{#unless noproxy}}
+  # vhostプロキシサーバ
+  nginx-proxy:
+    image: jwilder/nginx-proxy
+    privileged: true # ルート権限
+    ports:
+      - "80:80" # http
+      - "443:443" # https
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+      - /usr/share/nginx/html
+      - /etc/nginx/vhost.d
+      - ./docker/certs:/etc/nginx/certs:ro # letsencryptコンテナが ./docker/certs/ に作成したSSL証明書を読む
+    environment:
+      DHPARAM_GENERATION: "false"
+    labels:
+      com.github.jrcs.letsencrypt_nginx_proxy_companion.nginx_proxy: "true"
+
+  # 無料SSL証明書発行コンテナ
+  letsencrypt:
+    image: jrcs/letsencrypt-nginx-proxy-companion
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /usr/share/nginx/html
+      - /etc/nginx/vhost.d
+      - ./docker/certs:/etc/nginx/certs:rw # ./docker/certs/ にSSL証明書を書き込めるように rw モードで共有
+    depends_on:
+      - nginx-proxy # nginx-proxyコンテナの後で起動
+    environment:
+      NGINX_PROXY_CONTAINER: nginx-proxy
+{{/unless}}
