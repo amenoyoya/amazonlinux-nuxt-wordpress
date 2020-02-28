@@ -14,14 +14,15 @@ COPY requirements.txt $project_dir
 WORKDIR $project_dir
 
 RUN : 'uWSGIビルド用ツール導入' && \
-    apk add gcc build-base linux-headers && \
+    apk add --no-cache gcc build-base linux-headers && \
     : 'requirements.txtに記載されたパッケージをインストール' && \
     pip install --upgrade pip && \
     pip install -r requirements.txt && \
     : 'www-dataユーザ追加（ユーザIDをDocker実行ユーザIDと合わせる）' && \
     adduser -u $UID -S www-data && \
     : 'www-dataユーザをsudoersに追加' && \
-    echo 'www-data ALL=(ALL) NOPASSWORD:ALL' >> /etc/sudoers && \
+    apk add --no-cache sudo && \
+    echo 'www-data ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers && \
     : 'www-dataユーザのパスワードを`password`に変更' && \
     echo 'www-data:password' | chpasswd && \
     : '作業ディレクトリのパーミッション変更' && \
