@@ -5,6 +5,7 @@ Vagarantの挙動が不安定で開発が進まないときは、**Docker for Wi
 - 必要要件:
     - Windows 10 Pro以上
         - Hyper/Vが動作する環境が必要
+        - Hyper/Vが動作しない場合（Windows 10 Home等）は、***DockerToolbox**が使える
 
 ***
 
@@ -94,3 +95,60 @@ Vagarantの挙動が不安定で開発が進まないときは、**Docker for Wi
     ```bash
     > ipconfig /flushdns
     ```
+
+***
+
+## DockerToolbox導入
+
+Windows 10 Home を使っている場合や、VirtualBoxと併用したい場合などは、DockerToolboxを使うと良い（Docker for Windows は、Hyper/V環境で動くため、VirtualBoxやVMwareとは併用できない）
+
+DockerToolboxは、VirtualBox＋Linux環境の上でDockerを動かすため、Vagrant＋Docker環境と似たような構成になる
+
+### Chocolateyインストール
+Chocolateyパッケージマネージャ経由でインストールしたいため、先にChocolateyをインストールする
+
+`Win + X` |> `A` => 管理者権限PowerShell起動
+
+```powershell
+# install chocolatey
+> Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
+
+# confirm version
+> choco -v
+0.10.15
+```
+
+### DockerToolboxインストール
+```powershell
+# ChocolateyでVirtualBoxインストール
+## 100MB程度あるため、それなりに時間がかかる
+> choco install -y virtualbox
+
+# => C:\Program Files\Oracle\VirtualBox\ にインストールされ、自動的にパスが通される
+# => パス設定を有効化するため、一旦PowerShellを再起動する
+
+# PowerShellを再起動したら、VirtualBox のバージョン確認
+> vboxmanage -v
+6.1.4r136177
+
+# ChocolateyでDockerToolboxインストール
+## 230MB程度あるため、それなりに時間がかかる
+> choco install -y docker-toolbox
+
+# => C:\Program Files\Docker Toolbox\ にインストールされ、自動的にパスが通される
+# => パス設定を有効化するため、一旦PowerShellを再起動する
+
+# PowerShellを再起動したら、docker, docker-compose のバージョン確認
+> docker -v
+Docker version 19.03.1, build 74b1e89e8a
+
+> docker-compose -v
+docker-compose version 1.24.1, build 4667896b
+```
+
+### 動作確認
+```powershell
+# DockerToolbox仮想環境起動
+## 初回起動時は仮想イメージダウンロードのため、それなりに時間がかかる
+> docker-start
+```
