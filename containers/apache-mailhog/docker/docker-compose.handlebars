@@ -6,7 +6,9 @@ services:
     build: ./docker/web
     links:
       - db # dbコンテナとリンク
+{{#unless host}}
       - mailhog # mailhogコンテナとリンク
+{{/unless}}
     volumes:
       # 共有ディレクトリ
       - ./web-data/:/var/www/html/ # ドキュメントルート
