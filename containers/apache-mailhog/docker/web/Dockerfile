@@ -16,6 +16,9 @@ RUN apt-get update && \
     npm install -g yarn && \
     : 'Enable rewrite engine' && \
     a2enmod rewrite && \
+    : 'Create log directory' && \
+    mkdir -p /var/log/httpd/ && \
+    chown www-data /var/log/httpd/ && \
     : 'Exchange: sendmail -> mhsendmail' && \
     curl -sSLO https://github.com/mailhog/mhsendmail/releases/download/v0.2.0/mhsendmail_linux_amd64 && \
     chmod +x mhsendmail_linux_amd64 && \
