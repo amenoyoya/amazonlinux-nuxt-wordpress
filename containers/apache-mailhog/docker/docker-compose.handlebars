@@ -63,7 +63,7 @@ services:
       # 起動時にinitdb.d内で定義されたデータベースを構築する
       - ./docker/db/initdb.d/:/docker-entrypoint-initdb.d/
       # マウントディレクトリ
-      - ./docker/dump/:/var/dump/
+      - ./docker/db/dump/:/var/dump/
 {{#if noproxy}}
     network_mode: bridge
 {{/if}}
