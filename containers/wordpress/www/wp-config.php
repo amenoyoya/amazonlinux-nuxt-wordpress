@@ -1,12 +1,3 @@
-#!/bin/bash
-
-if [ ! -d './wordpress' ]; then
-    # WordPressが未インストールであればダウンロード＆インストール
-    wget -O - https://ja.wordpress.org/latest-ja.tar.gz | tar xzvf -
-fi
-
-# wp-config.php 作成
-tee './wordpress/wp-config.php' <<\EOF
 <?php
 define( 'DB_NAME', isset($_ENV['WORDPRESS_DB_NAME'])? $_ENV['WORDPRESS_DB_NAME']: 'wordpress' );
 define( 'DB_USER', isset($_ENV['WORDPRESS_DB_USER'])? $_ENV['WORDPRESS_DB_USER']: 'root' );
@@ -24,16 +15,13 @@ define('SECURE_AUTH_SALT', 'A^ |?tdmO=q.0.Z}*-=(:r*oj2W[[8Gv=`Y-s_5|35JL-L0XT|r(
 define('LOGGED_IN_SALT',   '&w/Ygay)Y%>j+8v&7NqEK@eb$3yLauP|Ho#X+(pmNuL8l9|7}64lO|uX n>@to-I');
 define('NONCE_SALT',       'AD`IQ:N=938glM}-#LF/Mirk4U!T3^Dp+bS995EU%Iq*mAQ>T>&3z_!nBE!2bbhu');
 
-$table_prefix = 'wp_';
+$table_prefix = isset($_ENV['WORDPRESS_DB_PREFIX'])? $_ENV['WORDPRESS_DB_PREFIX']: 'wp_';
 
 define( 'WP_DEBUG', isset($_ENV['WORDPRESS_DEBUG'])? $_ENV['WORDPRESS_DEBUG']: false );
+define( 'WPLANG', 'ja' );
 
 if ( ! defined( 'ABSPATH' ) ) {
-	define( 'ABSPATH', dirname( __FILE__ ) . '/' );
+    define( 'ABSPATH', dirname( __FILE__ ) . '/' );
 }
 
 require_once( ABSPATH . 'wp-settings.php' );
-EOF
-
-# 環境変数を引き継いで Apache起動
-sudo -E apachectl -D FOREGROUND

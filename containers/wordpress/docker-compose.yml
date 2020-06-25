@@ -2,7 +2,7 @@ version: "3"
 
 # サービスコンテナ
 services:
-  # apache + php + wordpress コンテナ
+  # apache + php + wordpress
   web:
     build:
       context: ./docker/web # ./docker/web/Dockerfile からビルド
@@ -12,23 +12,29 @@ services:
       - db # dbコンテナとリンク
       - smtp # smtpコンテナとリンク
     ports:
-      - "8000:80" # http://localhost:8000 => docker://web:80
+      - 1000:80
     volumes:
-      # WordPressデータを ./web-data/ ディレクトリに展開
-      - ./web-data/:/var/www/html/
-      # virtualhost設定ファイルを反映
+      # 開発ディレクトリ（DocumentRoot: /var/www/html/）
+      - ./www/:/var/www/
+      # Apache設定ファイルを反映
       - ./docker/web/000-default.conf:/etc/apache2/sites-available/000-default.conf
       # php設定ファイルを反映
       - ./docker/web/php.ini:/usr/local/etc/php/php.ini
     environment:
       WORDPRESS_DB_HOST: db:3306 # docker://db:3306 をDBホストにする
-      WORDPRESS_DB_USER: wp_user # = docker://db.environemt.MYSQL_USER
-      WORDPRESS_DB_PASSWORD: wp_password # = docker://db.environment.MYSQL_PASSWORD
+      WORDPRESS_DB_USER: root # = docker://db.environemt.MYSQL_USER
+      WORDPRESS_DB_PASSWORD: root # = docker://db.environment.MYSQL_PASSWORD
       WORDPRESS_DB_NAME: wordpress # = docker://db.environment.MYSQL_DATABASE
       WORDPRESS_DB_CHARSET: utf8mb4 # WordPressのデータベース文字コードを utf8mb4 に
       WORDPRESS_DB_COLLATE: utf8mb4_general_ci # WordPressのデータベース照合順序を utf8mb4_general_ci に
+      WORDPRESS_DB_PREFIX: wp_ # WordPressのデータベーステーブル接頭辞を wp_ に
       WORDPRESS_DEBUG: "false" # WordPressデバッグモードを false に
-  # dbコンテナ
+      # VIRTUAL_HOST設定（nginx-proxy）
+      VIRTUAL_HOST: web.local # https://web.local/ => docker://pma:80
+      VIRTUAL_PORT: 80
+      CERT_NAME: default # ローカル開発時は自己証明書を使う
+  
+  # MySQL サーバ
   db:
     build: ./docker/db
     volumes:
@@ -42,24 +48,64 @@ services:
     working_dir: /var/dump/
     environment:
       MYSQL_ROOT_PASSWORD: root # rootユーザパスワード
-      MYSQL_USER: wp_user # データベース使用ユーザ名
-      MYSQL_PASSWORD: wp_password # 上記ユーザのパスワード
       MYSQL_DATABASE: wordpress # 使用データベース名
-  # phpmyadminコンテナ
+  
+  # phpMyAdmin
   pma:
     image: phpmyadmin/phpmyadmin:latest
-    ports:
-      - "8001:80" # http://localhost:8001 => docker://pma:80
     links:
       - db
+    ports:
+      - 2000:80
     environment:
       PMA_HOST: db
-  # mailhogコンテナ
+      # VIRTUAL_HOST設定（nginx-proxy）
+      VIRTUAL_HOST: pma.web.local # https://pma.web.local/ => docker://pma:80
+      VIRTUAL_PORT: 80
+      CERT_NAME: default # ローカル開発時は自己証明書を使う
+  
+  # ローカルSMTPサーバ
   smtp:
     image: mailhog/mailhog
     ports:
-      - 8002:8025 # HTTP Port | http://localhost:8002 => docker://smtp:8025
-      - 8003:1025 # SMTP Port | http://localhost:8003 => docker://smtp:1025
+      - 3000:8025 # HTTP Port (nginx-proxyコンテナを使っているならポート設定は不要)
+      - 4000:1025 # SMTP Port
+    environment:
+      # VIRTUAL_HOST設定（nginx-proxy）
+      VIRTUAL_HOST: mail.web.local # https://mail.web.local/ => docker://mailhog:8025
+      VIRTUAL_PORT: 8025
+      CERT_NAME: default # ローカル開発時は自己証明書を使う
+  
+  # --- VIRTUAL_HOST を使う場合は以下 nginx-proxy と letsencrypt コンテナを有効化する ---
+  # # vhostプロキシサーバ
+  # nginx-proxy:
+  #   image: jwilder/nginx-proxy
+  #   privileged: true # ルート権限
+  #   ports:
+  #     - "80:80" # http
+  #     - "443:443" # https
+  #   volumes:
+  #     - /var/run/docker.sock/:/tmp/docker.sock/:ro
+  #     - /usr/share/nginx/html/
+  #     - /etc/nginx/vhost.d/
+  #     - ./docker/certs/:/etc/nginx/certs/:ro # letsencryptコンテナが ./docker/certs/ に作成したSSL証明書を読む
+  #   environment:
+  #     DHPARAM_GENERATION: "false"
+  #   labels:
+  #     com.github.jrcs.letsencrypt_nginx_proxy_companion.nginx_proxy: "true"
+
+  # # 無料SSL証明書発行コンテナ
+  # letsencrypt:
+  #   image: jrcs/letsencrypt-nginx-proxy-companion
+  #   volumes:
+  #     - /var/run/docker.sock/:/var/run/docker.sock/:ro
+  #     - /usr/share/nginx/html/
+  #     - /etc/nginx/vhost.d/
+  #     - ./docker/certs/:/etc/nginx/certs/:rw # ./docker/certs/ にSSL証明書を書き込めるように rw モードで共有
+  #   depends_on:
+  #     - nginx-proxy # nginx-proxyコンテナの後で起動
+  #   environment:
+  #     NGINX_PROXY_CONTAINER: nginx-proxy
 
 # ボリュームコンテナ
 volumes:
