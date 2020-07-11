@@ -1,0 +1,14 @@
+version: "3"
+
+services:
+  app:
+    # Alpine Linux with Apache image をベースにする
+    image: httpd:2.4-alpine
+    volumes:
+      # ./ => docker://app:/work/ にマウント
+      - ./:/work/
+    # 作業ディレクトリ: docker://app:/work/
+    working_dir: /work/
+    environment:
+      # TimeZone を Asia/Tokyo に
+      TZ: Asia/Tokyo
