@@ -1,0 +1,7 @@
+relayhost = [$RELAY_SMTP_HOST]:$RELAY_SMTP_PORT
+smtp_use_tls = yes
+smtp_tls_CApath = /etc/pki/tls/certs/ca-bundle.crt
+smtp_sasl_auth_enable = yes
+smtp_sasl_password_maps = hash:/etc/postfix/sasl_passwd
+smtp_sasl_tls_security_options = noanonymous
+smtp_sasl_mechanism_filter = plain
