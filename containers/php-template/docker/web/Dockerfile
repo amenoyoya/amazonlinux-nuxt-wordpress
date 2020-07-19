@@ -19,6 +19,15 @@ RUN apt-get update && apt-get install -y wget curl git libicu-dev mailutils unzi
     : 'www-data ユーザで sudo 実行可能に' && \
     apt-get install -y sudo && \
     echo 'www-data ALL=NOPASSWD: ALL' >> '/etc/sudoers' && \
+    : 'install mecab (形態素解析エンジン)' && \
+    : '辞書ファイル => /usr/share/mecab/dic/ipadic/' && \
+    apt-get install -y mecab mecab-ipadic libmecab-dev && \
+    git clone https://github.com/rsky/php-mecab.git /usr/local/src/php-mecab && \
+    cd /usr/local/src/php-mecab/mecab/ && \
+    phpize && \
+    ./configure && \
+    make && make install && \
+    echo 'extension=mecab.so' > /usr/local/etc/php/conf.d/mecab.ini && \
     : 'cleanup apt-get caches' && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
