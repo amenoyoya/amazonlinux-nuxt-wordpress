@@ -43,9 +43,6 @@ services:
     # ports:
     #   - 17401:8025 # HTTP Port
     #   - 17425:1025 # SMTP Port
-    volumes:
-      # メールデータ保存ボリューム
-      - ./docker/mailhog/:/mailhog/:rw
     environment:
       # VirtualHost (nginx-proxy)
       VIRTUAL_HOST: mail.web.localhost
@@ -53,9 +50,9 @@ services:
       # LETSENCRYPT_EMAIL: admin@web.localhost
       CERT_NAME: default # ローカル開発時は自己証明書利用
       VIRTUAL_PORT: 8025
-      # メール永続化設定
-      MH_STORAGE: maildir
-      MH_MAILDIR_PATH: /mailhog/
+      # メール永続化設定 ※メールソート順に問題があるため基本的に永続化しない方が良い
+      # MH_STORAGE: maildir
+      # MH_MAILDIR_PATH: /mailhog/
   
   # MySQL server
   db:
