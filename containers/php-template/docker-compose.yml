@@ -45,7 +45,7 @@ services:
     #   - 17425:1025 # SMTP Port
     volumes:
       # メールデータ保存ボリューム
-      - ./docker/mailhog/:/mailhog/
+      - ./docker/mailhog/:/mailhog/:rw
     environment:
       # VirtualHost (nginx-proxy)
       VIRTUAL_HOST: mail.web.localhost
