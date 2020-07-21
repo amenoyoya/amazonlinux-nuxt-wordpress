@@ -2,13 +2,23 @@ version: "3"
 
 services:
   app:
-    # Alpine Linux with Apache image をベースにする
-    image: httpd:2.4-alpine
+    # ./Dockerfile からビルド
+    build: ./
+    # 動作検証のため、コンテナを稼働状態にして内部シェルに入りたい場合は tty: true にする
+    # tty: true
+    env_file:
+      - ./.env
     volumes:
       # ./ => docker://app:/work/ にマウント
       - ./:/work/
-    # 作業ディレクトリ: docker://app:/work/
-    working_dir: /work/
+      
+      # nginx カスタム設定ファイル格納ディレクトリ共有
+      - /etc/nginx/conf.d/
+      # Synology NAS などの nginx 設定をする場合は↓
+      # - /usr/local/etc/nginx/sites-enabled/:/etc/nginx/conf.d/
     environment:
       # TimeZone を Asia/Tokyo に
       TZ: Asia/Tokyo
+
+      # Dockerfile のあるディレクトリへの絶対パス指定
+      DOCKS_ROOT: $DOCKS_ROOT

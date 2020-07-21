@@ -1,0 +1,16 @@
+# first step: source setup
+## 各種コマンド・環境変数等準備
+
+# Dockerfile ホスト側ルートディレクトリ
+## このスクリプトのあるディレクトリを設定: https://qiita.com/yudoufu/items/48cb6fb71e5b498b2532
+export DOCKS_SETUP=$(realpath ${BASH_SOURCE:-$0})
+export DOCKS_ROOT=$(dirname $DOCKS_SETUP)
+
+# server_util.docker://app コマンド実行
+export command='docker-compose run --rm app'
+
+# lego による http-01 認証
+export lego_http='docker-compose run --rm app lego --accept-tos --path /tools/lego/ --http --http.webroot /tools/lego/webroot/'
+
+# lego による dns-01 認証
+export lego_dns='docker-compose run --rm app lego --accept-tos --path /tools/lego/ --dns'

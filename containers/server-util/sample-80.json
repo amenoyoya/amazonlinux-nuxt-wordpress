@@ -1,0 +1,11 @@
+[
+  {
+    "host": "mydomain.dev",
+    "root": "/var/www/html/"
+  },
+  {
+    "host": "secret.mydomain.dev",
+    "port": 8080,
+    "basicauth": "/etc/nginx/conf.d/.htpasswd"
+  }
+]

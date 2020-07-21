@@ -1,0 +1,14 @@
+[
+  {
+    "host": "mydomain.dev",
+    "root": "/var/www/html/",
+    "certfile": "/etc/lego/certificates/mydomain.dev.crt",
+    "certkey": "/etc/lego/certificates/mydomain.dev.key"
+  },
+  {
+    "host": "secret.mydomain.dev",
+    "port": 8080,
+    "certfile": "/etc/lego/certificates/secret.mydomain.dev.crt",
+    "certkey": "/etc/lego/certificates/secret.mydomain.dev.key"
+  }
+]
