@@ -1,0 +1,36 @@
+version: "3"
+
+services:
+  # vhostプロキシサーバ
+  nginx-proxy:
+    image: jwilder/nginx-proxy
+    network_mode: bridge # ホスティングする他の docker コンテナもネットワークブリッジングすること
+    privileged: true # ルート権限
+    ports:
+      - "80:80"   # http
+      - "443:443" # https
+    volumes:
+      - /var/run/docker.sock/:/tmp/docker.sock/:ro
+      - /usr/share/nginx/html/
+      - /etc/nginx/vhost.d/
+      - ./docker/certs/:/etc/nginx/certs/:ro # letsencryptコンテナが ./docker/certs/ に作成したSSL証明書を読む
+      - ./docker/nginx.conf:/etc/nginx/nginx.conf # 設定ファイル
+      # - ./docker/logs/:/var/nginx/logs/:rw # ログ
+    environment:
+      DHPARAM_GENERATION: "false"
+    labels:
+      com.github.jrcs.letsencrypt_nginx_proxy_companion.nginx_proxy: "true"
+
+  # 無料SSL証明書発行コンテナ
+  letsencrypt:
+    image: jrcs/letsencrypt-nginx-proxy-companion
+    network_mode: bridge # ホスティングする他の docker コンテナもネットワークブリッジングすること
+    volumes:
+      - /var/run/docker.sock/:/var/run/docker.sock/:ro
+      - /usr/share/nginx/html/
+      - /etc/nginx/vhost.d/
+      - ./docker/certs/:/etc/nginx/certs/:rw # ./docker/certs/ にSSL証明書を書き込めるように rw モードで共有
+    depends_on:
+      - nginx-proxy # nginx-proxyコンテナの後で起動
+    environment:
+      NGINX_PROXY_CONTAINER: nginx-proxy
