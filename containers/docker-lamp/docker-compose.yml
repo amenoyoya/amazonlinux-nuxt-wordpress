@@ -8,6 +8,8 @@ volumes:
 services:
   web:
     build: ./docker/web/
+    logging:
+      driver: json-file
     # restart: always
     network_mode: bridge # 00-nginx-proxy が VIRTUAL_HOST 振り分けできるようにネットワーク共有
     links:
@@ -44,6 +46,8 @@ services:
   # local SMTP server + Mail catcher
   mailhog:
     image: mailhog/mailhog
+    logging:
+      driver: json-file
     network_mode: bridge # 00-nginx-proxy が VIRTUAL_HOST 振り分けできるようにネットワーク共有
     # ポートフォワーディング（nginx-proxy を使う場合は不要）
     ports:
@@ -63,6 +67,8 @@ services:
   # MySQL server
   db:
     build: ./docker/db/
+    logging:
+      driver: json-file
     # restart: always
     network_mode: bridge # 00-nginx-proxy が VIRTUAL_HOST 振り分けできるようにネットワーク共有
     volumes:
@@ -84,6 +90,8 @@ services:
   # phpMyAdmin
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
+    logging:
+      driver: json-file
     # restart: always
     network_mode: bridge # 00-nginx-proxy が VIRTUAL_HOST 振り分けできるようにネットワーク共有
     links:
@@ -115,6 +123,8 @@ services:
         RELAY_SMTP_PORT: $RELAY_SMTP_PORT
         RELAY_SMTP_USER: $RELAY_SMTP_USER
         RELAY_SMTP_PASSWORD: $RELAY_SMTP_PASSWORD
+    logging:
+      driver: json-file
     # restart: always
     network_mode: bridge # 00-nginx-proxy が VIRTUAL_HOST 振り分けできるようにネットワーク共有
     tty: true
