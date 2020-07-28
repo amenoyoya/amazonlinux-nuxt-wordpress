@@ -48,15 +48,15 @@ LAMP 基本構成 Docker テンプレート
     # - volume://db-data: データベース永続化用ボリューム => docker://db:/var/lib/mysql
     # - docker://web/ <php:7.2-apache>
     #     - メインWEBサーバ
-    #     - http://localhost:87400 = https://web.localhost => /var/www/app/
+    #     - http://localhost:XXXX = https://web.localhost => /var/www/app/
     # - docker://mailhog/ <mailhog/mailhog>
     #     - ローカル動作確認用SMTPサーバ + Web UI
-    #     - http://localhost:87401 = https://mail.web.localhost => docker://mailhog:8025
+    #     - http://localhost:XXXX = https://mail.web.localhost => docker://mailhog:8025
     # - docker://db <mysql:5.7>
     #     - MySQL database server
     # - docker://pma <phpmyadmin/phpmyadmin>
     #     - MySQL GUI admin panel
-    #     - http://localhost:87403 = https://pma.web.localhost => docker://pma:80
+    #     - http://localhost:XXXX = https://pma.web.localhost => docker://pma:80
     # - docker://postfix/ <catatnight/postfix>
     #     - MTA + ローカルSMTPサーバ
     #     - 外部にメール送信する場合は、外部SMTPサーバにリレーする必要がある
@@ -83,12 +83,15 @@ $ docker-compose up -d web mailhog db pma
 # ※全てのコンテナを起動する場合は docker-compose up -d
 ```
 
-- WEBサーバ: http://localhost:87400 = https://web.localhost
+- WEBサーバ: http://localhost:XXXX = https://web.localhost
+    - localhostポートはランダムに選出される（`docker-compose ps` で確認）
     - `./www/app/public/index.php` 表示
-- mailhog Web UI: http://localhost:87401 = https://mail.web.localhost
+- mailhog Web UI: http://localhost:XXXX = https://mail.web.localhost
+    - localhostポートはランダムに選出される（`docker-compose ps` で確認）
     - メールを外部 SMTP サーバを通して実際に送信したい場合は `./www/.msmtprc` を編集
     - もしくは postfix コンテナを立ち上げて、さらに外部 SMTP サーバにリレーすることもできる
-- phpMyAdmin UI: http://localhost:87403 = https://pma.web.localhost
+- phpMyAdmin UI: http://localhost:XXXX = https://pma.web.localhost
+    - localhostポートはランダムに選出される（`docker-compose ps` で確認）
 
 #### PHPフレームワークを使いたい場合
 Laravel や WordPress といったフレームワークを利用したい場合 [./www/setup.sh](./www/setup.sh) を編集することで、コンテナ起動時にテンプレートを準備することができる
