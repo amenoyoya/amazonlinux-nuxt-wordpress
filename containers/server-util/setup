@@ -10,7 +10,7 @@ export DOCKS_ROOT=$(dirname $DOCKS_SETUP)
 export command='docker-compose run --rm app'
 
 # lego による http-01 認証
-export lego_http='docker-compose run --rm app lego --accept-tos --path /tools/lego/ --http --http.webroot /tools/lego/webroot/'
+export lego_http='docker-compose run --rm app lego --accept-tos --path /work/lego/ --http --http.webroot /work/lego/webroot/'
 
 # lego による dns-01 認証
-export lego_dns='docker-compose run --rm app lego --accept-tos --path /tools/lego/ --dns'
+export lego_dns='docker-compose run --rm app lego --accept-tos --path /work/lego/ --dns'
