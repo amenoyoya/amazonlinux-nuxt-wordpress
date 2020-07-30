@@ -31,6 +31,12 @@ server {
 server {
     listen 443 ssl;
     server_name {{.Host}};
+{{- if .LegoRoot}}
+    location /.well-known/acme-challenge/ {
+        root {{.LegoRoot}};
+        index index.html;
+    }
+{{- end}}
     location / {
 {{- if .Root}}
         root {{.Root}};
