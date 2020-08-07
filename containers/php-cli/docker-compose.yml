@@ -1,0 +1,20 @@
+version: "3.3"
+
+services:
+  # php service container
+  # $ docker-compose run --service-ports php $command ...
+  php:
+    build:
+      # build from ./Dockerfile
+      context: ./
+      args:
+        # import $UID (current working user id)
+        # Set current host user for docker container: Measures for permission problems
+        UID: $UID
+    logging:
+      driver: json-file
+    volumes:
+      # host:./ => service://php:/work/ (cwd)
+      - ./:/work/
+    environment:
+      TZ: Asia/Tokyo
