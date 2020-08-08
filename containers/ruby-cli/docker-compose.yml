@@ -1,3 +1,4 @@
+# docker-compose exec -w workdir ...: -w option required >= 3.6
 version: "3.6"
 
 services:

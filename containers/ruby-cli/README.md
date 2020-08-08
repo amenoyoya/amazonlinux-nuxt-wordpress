@@ -8,7 +8,7 @@
 
 ### Setup
 ```bash
-# export current user id => service://ruby:workuser.id
+# export current user id => service://cli:workuser.id
 ## measures for permission problems
 $ export UID
 
@@ -16,8 +16,8 @@ $ export UID
 $ docker-compose build
 
 # launch docker containers
-## - service://ruby <ruby:2.7>
-##   - tcp://localhost:<port> => service://ruby:<port>
+## - service://cli <ruby:2.7>
+##   - tcp://localhost:<port> => service://cli:<port>
 $ docker-compose up -d
 
 # add execution permission to ./run

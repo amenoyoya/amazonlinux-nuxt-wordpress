@@ -1,2 +1,2 @@
 #!/bin/bash
-docker-compose run --service-ports php $*
+docker-compose exec cli $*

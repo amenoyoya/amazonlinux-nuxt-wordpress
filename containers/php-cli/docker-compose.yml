@@ -1,9 +1,10 @@
-version: "3.3"
+# docker-compose exec -w workdir ...: -w option required >= 3.6
+version: "3.6"
 
 services:
-  # php service container
-  # $ docker-compose run --service-ports php $command ...
-  php:
+  # cli service container
+  # $ docker-compose exec cli $command ...
+  cli:
     build:
       # build from ./Dockerfile
       context: ./
@@ -13,8 +14,12 @@ services:
         UID: $UID
     logging:
       driver: json-file
+    # tcp://localhost:<port> => service://cli:<port>
+    network_mode: host
+    # enable terminal
+    tty: true
     volumes:
-      # host:./ => service://php:/work/ (cwd)
+      # host:./ => service://cli:/work/ (cwd)
       - ./:/work/
     environment:
       TZ: Asia/Tokyo
