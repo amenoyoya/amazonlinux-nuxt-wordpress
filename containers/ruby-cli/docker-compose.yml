@@ -1,0 +1,25 @@
+version: "3.6"
+
+services:
+  # cli service container
+  # $ docker-compose exec cli $command ...
+  cli:
+    build:
+      # build from ./Dockerfile
+      context: ./
+      args:
+        # import $UID (current working user id)
+        # Set current host user for docker container: Measures for permission problems
+        UID: $UID
+    logging:
+      driver: json-file
+    # tcp://localhost:<port> => service://cli:<port>
+    network_mode: host
+    # enable terminal
+    tty: true
+    volumes:
+      # host:./ => service://cli:/work/
+      - ./:/work/
+    environment:
+      LANG: C.UTF-8
+      TZ: Asia/Tokyo
