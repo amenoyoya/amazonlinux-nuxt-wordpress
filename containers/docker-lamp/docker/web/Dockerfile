@@ -5,10 +5,10 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 ENV PATH $PATH:~/.composer/vendor/bin
 
 # 開発に必要なパッケージ等のインストール
-RUN apt-get update && apt-get install -y wget curl git libicu-dev mailutils unzip vim && \
-    docker-php-ext-install intl pdo pdo_mysql && \
-    : 'enable RewriteEngine' && \
-    a2enmod rewrite && \
+RUN apt-get update && \
+    apt-get install -y wget curl git libicu-dev mailutils unzip vim \
+        libfreetype6-dev libjpeg62-turbo-dev libpng-dev libxml2-dev && \
+    docker-php-ext-install intl gd xml mysql pdo pdo_mysql && \
     : 'create log directory' && \
     mkdir -p /var/log/httpd/ && \
     : 'install phpstan (PHPコード静的解析ツール)' && \
