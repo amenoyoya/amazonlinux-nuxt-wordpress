@@ -66,7 +66,7 @@ services:
   
   # MySQL server
   db:
-    build: ./docker/db/
+    image: mysql:5.7
     logging:
       driver: json-file
     # restart: always
@@ -76,13 +76,12 @@ services:
       - db-data:/var/lib/mysql
       # 初回投入データ: ./docker/db/initdb.d/
       - ./docker/db/initdb.d/:/docker-entrypoint-initdb.d/
-      # MySQL設定ファイル: host:/./docker/db/my.cnf => /etc/mysql/conf.d/my.cnf
-      - ./docker/db/my.cnf:/etc/mysql/conf.d/my.cnf
+      # MySQL設定ファイル: host:/./docker/db/my.cnf => /etc/mysql/conf.d/my.cnf 644
+      - ./docker/db/my.cnf:/etc/mysql/conf.d/my.cnf:ro
       # ダンプファイルやりとり用ディレクトリ（作業ディレクトリ）: host:/./docker/db/dump/ => docker.db:/var/dump/
       - ./docker/db/dump/:/var/dump/
     environment:
-      MYSQL_USER: root
-      MYSQL_PASSWORD: root
+      MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: database
       # TimeZone設定
       TZ: Asia/Tokyo
