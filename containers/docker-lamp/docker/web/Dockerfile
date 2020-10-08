@@ -8,7 +8,7 @@ ENV PATH $PATH:~/.composer/vendor/bin
 RUN apt-get update && \
     apt-get install -y wget curl git libicu-dev mailutils unzip vim \
         libfreetype6-dev libjpeg62-turbo-dev libpng-dev libxml2-dev && \
-    docker-php-ext-install intl gd xml mysql pdo pdo_mysql && \
+    docker-php-ext-install intl gd xml mysqli pdo pdo_mysql && \
     : 'create log directory' && \
     mkdir -p /var/log/httpd/ && \
     : 'install phpstan (PHPコード静的解析ツール)' && \
