@@ -53,19 +53,19 @@ Script: [lamp](./lamp)
 - services:
     - **web**: `php:7.3-apache`
         - PHP + Apache Web Server
-        - http://localhost:7080 => service://web:80
+        - http://localhost:8080 => service://web:80
             - サーバ実行ポートは `WEB_PORT` 環境変数で変更可能
     - **db**: `mysql:5.7`
         - MySQL Datbase Server
-        - tcp://localhost:7033 => service://db:3306
+        - tcp://localhost:8033 => service://db:3306
             - MySQL接続ポートは `DB_PORT` 環境変数で変更可能
         - Login:
             - User: `root`
             - Password: `root`
-            - Database: `sekokan`
+            - Database: `app`
     - **phpmyadmin**: `phpmyadmin/phpmyadmin`
         - MySQL Database Admin Server
-        - http://localhost:7057 => service://phpmyadmin:80
+        - http://localhost:8057 => service://phpmyadmin:80
             - 管理画面ポートは `PMA_PORT` 環境変数で変更可能
     - **mailhog**: `mailhog/mailhog`
         - SMTP Server + Mail catching sandbox environment

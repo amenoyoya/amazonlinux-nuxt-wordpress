@@ -221,7 +221,7 @@ services:
     # ポートフォワーディング
     ports:
       # http://localhost:${WEB_PORT} => service://web:80
-      - "${WEB_PORT:-8000}:80"
+      - "${WEB_PORT:-8080}:80"
     volumes:
       # ~www-data: host://./www/ => docker://web:/var/www/
       ## DocumentRoot: host://./www/app/public/ => docker://web:/var/app/public/
@@ -289,7 +289,7 @@ services:
     # ポートフォワーディング
     ports:
       # http://localhost:${PMA_PORT} => service://phpmyadmin:80
-      - "${PMA_PORT:-8080}:80"
+      - "${PMA_PORT:-8057}:80"
     volumes:
       - /sessions
     environment:
