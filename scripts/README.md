@@ -69,7 +69,7 @@ Script: [lamp](./lamp)
             - 管理画面ポートは `PMA_PORT` 環境変数で変更可能
     - **mailhog**: `mailhog/mailhog`
         - SMTP Server + Mail catching sandbox environment
-        - https://mail.sekokan.localhost => http://localhost:7025 => service://mailhog:8025
+        - http://localhost:7025 => service://mailhog:8025
             - 管理画面ポートは `MAILHOG_PORT` 環境変数で変更可能
             - SMTP接続ポートはポートフォワーディングなし (service://mailhog:1025)
     - **redis**: `redis:5`

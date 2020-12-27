@@ -187,7 +187,7 @@ PMA_PORT=8057
 MAILHOG_PORT=8025
 EOS
     tee ./docker-compose.yml << \EOS
-version: "3"
+version: "3.8"
 
 networks:
   # プロジェクト内仮想ネットワーク
@@ -241,7 +241,7 @@ services:
       MYSQL_PORT: 3306
       MYSQL_USER: root
       MYSQL_PASSWORD: root
-      MYSQL_DATABASE: database
+      MYSQL_DATABASE: app
       # TimeZone設定
       TZ: Asia/Tokyo
       # VirtualHost
@@ -274,7 +274,7 @@ services:
     working_dir: /var/dump/
     environment:
       MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: database
+      MYSQL_DATABASE: app
       # TimeZone設定
       TZ: Asia/Tokyo
   
@@ -375,11 +375,68 @@ EOS
     rm -rf ./www/app/
     
     docker-compose exec -w '/var/www/' web composer create-project --prefer-dist laravel/laravel app '8.*'
+    sed -i 's/^APP_URL=.*/APP_URL=https:\/\/web.localhost/g' ./www/app/.env
     sed -i 's/^DB_HOST=.*/DB_HOST=db/g' ./www/app/.env
-    sed -i 's/^DB_DATABASE=.*/DB_DATABASE=sekokan/g' ./www/app/.env
+    sed -i 's/^DB_DATABASE=.*/DB_DATABASE=app/g' ./www/app/.env
     sed -i 's/^DB_PASSWORD=.*/DB_PASSWORD=root/g' ./www/app/.env
     sed -i 's/^MAIL_HOST=.*/MAIL_HOST=mailhog/g' ./www/app/.env
     sed -i 's/^MAIL_PORT=.*/MAIL_PORT=1025/g' ./www/app/.env
+    # 日本語化
+    sed -i "s/'en'/'ja'/g" ./www/app/config/app.php
+    sed -i "s/'UTC'/'Asia\/Tokyo'/g" ./www/app/config/app.php
+    # https 対応
+    tee ./www/app/app/Providers/AppServiceProvider.php << \EOS
+<?php
+
+namespace App\Providers;
+
+use Illuminate\Support\ServiceProvider;
+
+class AppServiceProvider extends ServiceProvider
+{
+    /**
+     * Register any application services.
+     *
+     * @return void
+     */
+    public function register()
+    {
+        //
+    }
+
+    /**
+     * Bootstrap any application services.
+     *
+     * @return void
+     */
+    public function boot()
+    {
+        // AWS ALB -> EC2 間通信が http の場合に Mixed Content が発生するため修正
+        \URL::forceRootUrl(config('app.url'));
+        if (preg_match('/^https:/', config('app.url'))) {
+            \URL::forceScheme('https');
+        }
+    }
+}
+EOS
+    ;;
+"install-voyager")
+    docker-compose exec web composer require tcg/voyager
+    docker-compose exec web php artisan voyager:install
+    
+    # voyager:admin 作成
+    ## email: admin@voyager.localhost
+    ## name: admin
+    ## password: admin
+    ## confirm password: admin
+    docker-compose exec -T web php artisan voyager:admin admin@voyager.localhost --create << \PROMPT
+admin
+admin
+admin
+PROMPT
+    # 日本語化
+    cp -r ./www/app/vendor/tcg/voyager/publishable/lang/ja ./www/app/resources/lang/
+    sed -i "s/'en'/'ja'/g" ./www/app/config/voyager.php
     ;;
 *)
     docker-compose $*
