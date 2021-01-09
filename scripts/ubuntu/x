@@ -41,7 +41,7 @@ RUN : 'install development modules' && \
 
 # 作業ディレクトリ
 ## docker://app:/work/ => host://./
-WORKDIR /work/
+WORKDIR /work/home/
 
 # 作業ユーザ: Docker実行ユーザ
 ## => コンテナ側のコマンド実行で作成されるファイルパーミッションをDocker実行ユーザ所有に
