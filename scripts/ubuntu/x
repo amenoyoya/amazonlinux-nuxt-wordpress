@@ -1,0 +1,128 @@
+#!/bin/bash
+
+cd $(dirname $0)
+export USER_ID="${USER_ID:-$UID}"
+
+case "$1" in
+"init")
+    mkdir -p ./docker/conf/
+    touch ./docker/conf/crontab
+    tee ./docker/conf/supervisord.conf << \EOS
+[supervisord]
+nodaemon=true
+
+[program:crond]
+command=/bin/busybox crond -f
+process_name=%(program_name)s
+logfile_maxbytes=10MB
+logfile_backup=10
+stdout_logfile=/var/log/supervisor/%(program_name)s.log
+stderr_logfile=/var/log/supervisor/%(program_name)s-error.log
+EOS
+    tee ./docker/Dockerfile << \EOS
+FROM ubuntu:20.04
+
+# Docker実行ユーザIDを環境変数から取得
+ARG UID
+
+RUN : 'install development modules' && \
+    apt-get update && \
+    apt-get install -y wget curl git unzip vim && \
+    : 'install supervisor, busybox' && \
+    apt-get install -y supervisor busybox-static && \
+    mkdir -p /var/log/supervisor/ && \
+    : 'Add user $UID if not exists' && \
+    if [ "$(getent passwd $UID)" = "" ]; then useradd -m -u $UID user; fi && \
+    apt-get install -y sudo && \
+    echo "$(getent passwd $UID | cut -f 1 -d ':') ALL=NOPASSWD: ALL" >> '/etc/sudoers' && \
+    : 'cleanup apt-get caches' && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# 作業ディレクトリ
+## docker://app:/work/ => host://./
+WORKDIR /work/
+
+# 作業ユーザ: Docker実行ユーザ
+## => コンテナ側のコマンド実行で作成されるファイルパーミッションをDocker実行ユーザ所有に
+USER $UID
+
+# スタートアップコマンド（docker up の度に実行される）
+## 環境変数を引き継いで sudo 実行するため -E オプションをつけている
+## execute docker://app:/work/startup.sh
+CMD ["sudo", "-E", "/bin/bash", "/work/startup.sh"]
+EOS
+    tee ./www/startup.sh << \EOS
+#!/bin/bash
+# -- sudo user@service://app/
+
+# install crontab
+busybox crontab /var/spool/cron/crontabs/root
+
+# supervisor 起動
+/usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
+EOS
+    tee ./docker-compose.yml << \EOS
+# ver 3.6 >= required: enable '-w' option for 'docker-compose exec'
+version: "3.8"
+
+networks:
+  # プロジェクト内仮想ネットワーク
+  ## 同一ネットワーク内の各コンテナはサービス名で双方向通信可能
+  appnet:
+    driver: bridge
+    # ネットワークIP範囲を指定する場合
+    # ipam:
+    #   driver: default
+    #   config:
+    #     # 仮想ネットワークのネットワーク範囲を指定
+    #     ## 172.68.0.0/16 の場合、172.68.0.1 ～ 172.68.255.254 のIPアドレスを割り振れる
+    #     ## ただし 172.68.0.1 はゲートウェイに使われる
+    #     - subnet: 172.68.0.0/16
+
+volumes:
+  # volume for db service container 
+  db-data:
+    driver: local
+
+services:
+  # app service container: ubuntu:20.04
+  app:
+    build:
+      context: ./docker/
+      args:
+        # use current working user id
+        UID: $USER_ID
+    logging:
+      driver: json-file
+    # restart: always
+    # 所属ネットワーク
+    networks:
+      - appnet
+    # DNSサーバにGoogleDNS利用
+    dns: 8.8.8.8
+    # enable terminal
+    tty: true
+    volumes:
+      # host://./ => docker://app:/work/
+      - ./:/work/
+      # Docker socket 共有
+      - /var/run/docker.sock:/var/run/docker.sock
+      # 設定ファイル
+      - ./docker/conf/supervisord.conf:/etc/supervisor/conf.d/supervisord.conf
+      - ./docker/conf/crontab:/var/spool/cron/crontabs/root
+    environment:
+      # TimeZone設定
+      TZ: Asia/Tokyo
+EOS
+    ;;
+"app")
+    if [ "$w" != "" ]; then
+        docker-compose exec -Tw "$w" app "${@:2:($#-1)}"
+    else
+        docker-compose exec -T app "${@:2:($#-1)}"
+    fi
+    ;;
+*)
+    docker-compose $*
+    ;;
+esac
