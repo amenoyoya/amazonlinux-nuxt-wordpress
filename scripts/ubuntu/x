@@ -6,6 +6,7 @@ export USER_ID="${USER_ID:-$UID}"
 case "$1" in
 "init")
     mkdir -p ./docker/conf/
+    mkdir -p ./home/
     touch ./docker/conf/crontab
     tee ./docker/conf/supervisord.conf << \EOS
 [supervisord]
@@ -48,10 +49,13 @@ USER $UID
 
 # スタートアップコマンド（docker up の度に実行される）
 ## 環境変数を引き継いで sudo 実行するため -E オプションをつけている
-## execute docker://app:/work/startup.sh
-CMD ["sudo", "-E", "/bin/bash", "/work/startup.sh"]
+## execute docker://app:/work/home/startup.sh
+CMD ["sudo", "-E", "/bin/bash", "/work/home/startup.sh"]
 EOS
-    tee ./startup.sh << \EOS
+    tee ./home/.gitignore << \EOS
+supervisord.*
+EOS
+    tee ./home/startup.sh << \EOS
 #!/bin/bash
 # -- sudo user@service://app/
 
