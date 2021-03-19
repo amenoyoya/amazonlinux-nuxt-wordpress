@@ -22,25 +22,26 @@ EOS
     tee ./docker/Dockerfile << \EOS
 FROM ubuntu:20.04
 
-# Docker実行ユーザIDを環境変数から取得
-ARG UID
+# Docker実行ユーザIDを build-arg から取得
+ARG USER_ID
 
 # パッケージインストール時に対話モードを実行しないように設定
 ENV DEBIAN_FRONTEND=noninteractive
 
-RUN : 'install japanese environment' && \
+RUN if [ "$USER_ID" = "" ] || [ "$USER_ID" = "0" ]; then USER_ID=1026; fi && \
+    : 'install japanese environment' && \
     apt-get update && apt install -y tzdata language-pack-ja && \
     update-locale LANG=ja_JP.UTF-8 && \
     : 'install development modules' && \
-    apt-get install -y wget curl git unzip vim && \
+    apt-get install -y wget curl git unzip vim autossh && \
     : 'install supervisor, busybox' && \
     apt-get install -y supervisor busybox-static && \
     mkdir -p /var/log/supervisor/ && \
-    : 'Add user $UID (if $UID already exists, then change user id)' && \
-    if [ "$(getent passwd $UID)" != "" ]; then usermod -u $((UID + 100)) "$(getent passwd $UID | cut -f 1 -d ':')"; fi && \
-    useradd -m -s /bin/bash -u $UID user && \
+    : 'Add user (User ID: $USER_ID)' && \
+    if [ "$(getent passwd $USER_ID)" != "" ]; then usermod -u $((USER_ID + 100)) "$(getent passwd $USER_ID | cut -f 1 -d ':')"; fi && \
+    useradd -u $USER_ID -m -s /bin/bash worker && \
     apt-get install -y sudo && \
-    echo 'user ALL=NOPASSWD: ALL' >> '/etc/sudoers' && \
+    echo "worker ALL=NOPASSWD: ALL" >> '/etc/sudoers' && \
     : 'cleanup apt-get caches' && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
@@ -92,7 +93,7 @@ services:
       context: ./docker/
       args:
         # use current working user id
-        UID: $USER_ID
+        USER_ID: $USER_ID
     logging:
       driver: json-file
     # restart: always
