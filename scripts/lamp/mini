@@ -1,0 +1,226 @@
+#!/bin/bash
+
+cd $(dirname $0)
+export USER_ID="${USER_ID:-$UID}"
+
+case "$1" in
+"init")
+    mkdir -p ./docker/web/.ssh/
+    mkdir -p ./docker/web/conf/
+    mkdir -p ./vhost/app/public/
+    
+    tee ./docker/web/.ssh/config << \EOS
+ForwardAgent yes
+
+# known_hosts に接続先を登録しなくても接続するかどうか聞かれないようにする
+StrictHostKeyChecking no
+
+# 30秒ごとに接続確認パケットを送信
+ServerAliveInterval 30
+
+# 接続確認パケットを2回（30秒×2回=1分）試行して接続確認が取れない場合は切断
+## autossh を使っていれば、切断時に自動で再接続されるため便利
+ServerAliveCountMax 2
+EOS
+    touch ./docker/web/conf/crontab
+    tee ./docker/web/conf/supervisord.conf << \EOS
+[supervisord]
+nodaemon=true
+
+[program:crond]
+command=/bin/busybox crond -f
+process_name=%(program_name)s
+logfile_maxbytes=10MB
+logfile_backup=10
+stdout_logfile=/var/log/supervisor/%(program_name)s.log
+stderr_logfile=/var/log/supervisor/%(program_name)s-error.log
+
+[program:apache]
+command=apachectl -D FOREGROUND
+process_name=%(program_name)s
+logfile_maxbytes=10MB
+logfile_backup=10
+stdout_logfile=/var/log/supervisor/%(program_name)s.log
+stderr_logfile=/var/log/supervisor/%(program_name)s-error.log
+EOS
+    tee ./docker/web/conf/000-default.conf << \EOS
+# Apacheバージョン非表示
+ServerTokens ProductOnly
+ServerSignature off
+
+# HTTP TRACE 機能を無効化
+TraceEnable off
+
+<IfModule mod_headers.c>
+    # PHPバージョン非表示
+    ## PHP-FPM の場合は php.ini: expose_php を設定
+    Header unset X-Powered-By
+
+    # X-Frame-Options HTTP レスポンスヘッダ送信
+    ## WordPress管理画面などで必要になる場合があればコメントアウトする
+    Header append X-Frame-Options "DENY"
+
+    # Strict-Transport-Security レスポンスヘッダ送信
+    Header add Strict-Transport-Security "max-age=15768000"
+</IfModule>
+
+# .ht 系ファイル非表示
+<Files ~ "^\.ht">
+    Deny from all
+</Files>
+
+# VirtualHost: default site
+<VirtualHost *:80>
+    DocumentRoot /var/www/vhost/app/public/
+
+    ErrorLog /var/log/httpd/error.log
+    CustomLog /var/log/httpd/access.log combined
+
+    <Directory /var/www/vhost/app/>
+        # indexの存在しないディレクトリアクセス時、ファイルリストを表示させない: -Indexes
+        # 拡張子なしURLを拡張子有ファイルにリダイレクト可能に（コンテントネゴシエーション無効化）: -MultiViews
+        Options -Indexes -MultiViews +FollowSymLinks
+        AllowOverride All
+        Require all granted
+    </Directory>
+</VirtualHost>
+EOS
+    tee ./docker/web/conf/php.ini << \EOS
+; debug: display errors
+display_errors = on
+
+; hide php version info
+expose_php = off
+
+; Japanese settings
+[Date]
+date.timezone = "Asia/Tokyo"
+[mbstring]
+mbstring.internal_encoding = "UTF-8"
+EOS
+    tee ./docker/web/Dockerfile << \EOS
+FROM php:7.3-apache
+
+# Docker実行ユーザIDを build-arg から取得
+ARG USER_ID
+
+# パッケージインストール時に対話モードを実行しないように設定
+ENV DEBIAN_FRONTEND=noninteractive
+
+# composer 2 インストール
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+ENV PATH $PATH:~/.composer/vendor/bin
+
+RUN if [ "$USER_ID" = "" ] || [ "$USER_ID" = "0" ]; then USER_ID=1026; fi && \
+    : 'install japanese environment' && \
+    apt-get update && apt install -y tzdata locales-all && \
+    : 'install development modules' && \
+    apt-get install -y wget curl git unzip vim autossh \
+        libicu-dev libfreetype6-dev libjpeg62-turbo-dev libpng-dev libxml2-dev && \
+    docker-php-ext-install mbstring intl gd xml mysqli pdo pdo_mysql && \
+    : 'install php-pecl-redis' && \
+    pecl install redis-5.1.1 && docker-php-ext-enable redis && \
+    : 'enable apache modules' && \
+    a2enmod rewrite && \
+    a2enmod headers && \
+    a2enmod ssl && \
+    : 'create apache log directory' && \
+    mkdir -p /var/log/httpd/ && \
+    : 'install supervisor, busybox' && \
+    apt-get install -y supervisor busybox-static && \
+    mkdir -p /var/log/supervisor/ && \
+    : 'Change UID of www-data (User ID: $USER_ID)' && \
+    if [ "$(getent passwd $USER_ID)" != "" ]; then usermod -u $((USER_ID + 100)) "$(getent passwd $USER_ID | cut -f 1 -d ':')"; fi && \
+    usermod -u $USER_ID www-data && \
+    apt-get install -y sudo && \
+    echo 'www-data ALL=NOPASSWD: ALL' >> '/etc/sudoers' && \
+    : 'cleanup apt-get caches' && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# 日本語環境に設定
+ENV TZ Asia/Tokyo
+ENV LANG ja_JP.UTF-8
+ENV LANGUAGE ja_JP:ja
+ENV LC_ALL ja_JP.UTF-8
+
+# 作業ディレクトリ
+## docker://web:/var/www/vhost/app/ => host://./vhost/app/
+## DocumentRoot: docker://web:/var/www/vhost/app/public/
+WORKDIR /var/www/vhost/app/
+
+# 作業者: www-data
+USER www-data
+
+# スタートアップコマンド（docker up の度に実行される）: fix permission && activate crontab && launch supervisor daemon
+## 環境変数を引き継いで sudo 実行するため -E オプションをつけている
+CMD ["sudo", "-E", "/bin/bash", "-c", "chmod 600 /var/www/.ssh/* && busybox crontab /var/spool/cron/crontabs/www-data && cd /root/ && /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf"]
+EOS
+    if [ ! -e './vhost/app/public/index.php' ]; then
+        echo '<?php phpinfo() ?>' > ./vhost/app/public/index.php
+    fi
+    tee ./.env << \EOS
+WEB_PORT=8080
+EOS
+    tee ./docker-compose.yml << \EOS
+version: "3.8"
+
+networks:
+  # プロジェクト内仮想ネットワーク
+  ## 同一ネットワーク内の各コンテナはサービス名で双方向通信可能
+  lampnet:
+    driver: bridge
+    # ネットワークIP範囲を指定する場合
+    # ipam:
+    #   driver: default
+    #   config:
+    #     # 仮想ネットワークのネットワーク範囲を指定
+    #     ## 172.68.0.0/16 の場合、172.68.0.1 ～ 172.68.255.254 のIPアドレスを割り振れる
+    #     ## ただし 172.68.0.1 はゲートウェイに使われる
+    #     - subnet: 172.68.0.0/16
+
+services:
+  # web service container: php 7.3 + apache 2.4
+  web:
+    build:
+      context: ./docker/web/
+      args:
+        # use current working user id
+        USER_ID: $USER_ID
+    logging:
+      driver: json-file
+    # restart: always
+    # 所属ネットワーク
+    networks:
+      - lampnet
+    # ポートフォワーディング
+    ports:
+      # http://localhost:{WEB_PORT} => http://web:80
+      - "${WEB_PORT:-8080}:80"
+    volumes:
+      # host://./vhost/ => docker://web:/var/www/vhost/
+      ## DocumentRoot: host://./vhost/app/public/ => docker://web:/var/www/vhost/app/public/
+      - ./vhost/:/var/www/vhost/
+      # 設定ファイル
+      - ./docker/web/conf/000-default.conf:/etc/apache2/sites-available/000-default.conf
+      - ./docker/web/conf/php.ini:/usr/local/etc/php/conf.d/php.ini
+      - ./docker/web/conf/supervisord.conf:/etc/supervisor/conf.d/supervisord.conf
+      - ./docker/web/conf/crontab:/var/spool/cron/crontabs/www-data
+      # ~/.ssh/ sharing
+      - ./docker/web/.ssh/:/var/www/.ssh/
+    environment:
+      # Composer設定
+      COMPOSER_ALLOW_SUPERUSER: 1 # root権限での実行を許可
+      COMPOSER_NO_INTERACTION: 1  # 非対話的にインストール
+EOS
+    ;;
+"web")
+    if [ "$w" != "" ]; then
+        docker-compose exec -w "$w" web "${@:2:($#-1)}"
+    else
+        docker-compose exec web "${@:2:($#-1)}"
+    fi
+    ;;
+*)
+    docker-compose $*
+    ;;
+esac
